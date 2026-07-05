@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZenTimer Floating</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+      font-family: 'Inter', -apple-system, sans-serif;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    #container {
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      background: rgba(18, 18, 22, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+    #container:hover {
+      background: rgba(28, 28, 34, 0.95);
+    }
+    #container.focus {
+      border-color: rgba(245, 158, 11, 0.3);
+      box-shadow: 0 8px 32px rgba(245, 158, 11, 0.15);
+    }
+    #container.break {
+      border-color: rgba(45, 212, 191, 0.3);
+      box-shadow: 0 8px 32px rgba(45, 212, 191, 0.15);
+    }
+    #time {
+      font-size: 28px;
+      font-weight: 300;
+      color: #f5f5f4;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    #phase {
+      font-size: 10px;
+      color: #a8a29e;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    #container.focus #phase { color: #fbbf24; }
+    #container.break #phase { color: #2dd4bf; }
+    #progress-ring {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <svg id="progress-ring" viewBox="0 0 160 80">
+      <rect
+        x="2" y="2"
+        width="156" height="76"
+        rx="14"
+        fill="none"
+        stroke="rgba(255,255,255,0.06)"
+        stroke-width="2"
+      />
+      <rect
+        id="progress-bar"
+        x="2" y="2"
+        width="0" height="76"
+        rx="14"
+        fill="none"
+        stroke="rgba(245, 158, 11, 0.5)"
+        stroke-width="2"
+      />
+    </svg>
+    <div id="time">25:00</div>
+    <div id="phase">Focus</div>
+  </div>
+
+  <script>
+    const { listen } = window.__TAURI__.event;
+
+    const container = document.getElementById('container');
+    const timeEl = document.getElementById('time');
+    const phaseEl = document.getElementById('phase');
+    const progressBar = document.getElementById('progress-bar');
+
+    // Listen for timer updates from main window
+    listen('timer-update', (event) => {
+      const { time, phase, progress } = event.payload;
+
+      timeEl.textContent = time;
+
+      // Phase display
+      const phaseMap = {
+        focus: 'Focus',
+        break: 'Break',
+        buffer: 'Buffer',
+        idle: 'Ready',
+      };
+      phaseEl.textContent = phaseMap[phase] || phase;
+
+      // Update container style based on phase
+      container.className = '';
+      if (phase === 'focus') container.classList.add('focus');
+      else if (phase === 'break' || phase === 'buffer') container.classList.add('break');
+
+      // Update progress bar (0-1 → 0-156)
+      const maxWidth = 156;
+      progressBar.setAttribute('width', String(maxWidth * progress));
+
+      // Update progress bar color
+      if (phase === 'break' || phase === 'buffer') {
+        progressBar.setAttribute('stroke', 'rgba(45, 212, 191, 0.5)');
+      } else {
+        progressBar.setAttribute('stroke', 'rgba(245, 158, 11, 0.5)');
+      }
+    });
+
+    // Double-click to bring main window to front
+    let clickCount = 0;
+    let clickTimer = null;
+
+    container.addEventListener('click', () => {
+      clickCount++;
+      if (clickCount === 1) {
+        clickTimer = setTimeout(() => {
+          clickCount = 0;
+        }, 300);
+      } else if (clickCount === 2) {
+        clearTimeout(clickTimer);
+        clickCount = 0;
+        // Emit event to bring main window to front
+        window.__TAURI__.window.getCurrent().hide();
+      }
+    });
+  </script>
+</body>
+</html>

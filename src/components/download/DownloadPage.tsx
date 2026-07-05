@@ -3,13 +3,18 @@
 // ──────────────────────────────────────────────
 
 import { motion } from 'framer-motion'
-import { Monitor, Smartphone, Globe, ArrowRight, Check } from 'lucide-react'
+import { Monitor, Smartphone, Globe, ArrowRight, Check, Download } from 'lucide-react'
+import { useT } from '@/i18n/useT'
+import { isTauri } from '@/utils/tauri'
 
 interface DownloadPageProps {
   onNavigateHome: () => void
 }
 
 export function DownloadPage({ onNavigateHome }: DownloadPageProps) {
+  const { t } = useT()
+  const runningInTauri = isTauri()
+
   return (
     <div className="min-h-screen pt-24 pb-12 px-6 noise-overlay">
       <div className="max-w-4xl mx-auto">
@@ -22,14 +27,13 @@ export function DownloadPage({ onNavigateHome }: DownloadPageProps) {
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-focus-400 animate-pulse" />
-            <span className="text-xs text-ink-300">多平台可用</span>
+            <span className="text-xs text-ink-300">{t('multiPlatform')}</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-serif font-light text-ink-50 mb-4 tracking-tight">
-            随时随地，<span className="text-gradient">保持专注</span>
+            {t('downloadTitle')}
           </h1>
           <p className="text-ink-400 text-base max-w-lg mx-auto leading-relaxed">
-            ZenTimer 支持网页端、Windows 桌面端和 Android 移动端。
-            选择适合你的方式开始。
+            {t('downloadSubtitle')}
           </p>
         </motion.div>
 
@@ -39,13 +43,13 @@ export function DownloadPage({ onNavigateHome }: DownloadPageProps) {
           <PlatformCard
             delay={0.1}
             icon={<Globe size={22} />}
-            badge="推荐"
+            badge={t('recommended')}
             badgeColor="focus"
-            title="网页版"
-            subtitle="PWA · 无需安装"
-            features={['打开即用', '可安装到桌面', '自动更新', '跨平台']}
+            title={t('webVersion')}
+            subtitle="PWA · No install"
+            features={[t('openInstantly'), t('installToDesktop'), t('autoUpdate'), t('crossPlatform')]}
             primaryAction={{
-              label: '使用网页版',
+              label: t('useWebVersion'),
               onClick: onNavigateHome,
             }}
           />
@@ -54,14 +58,22 @@ export function DownloadPage({ onNavigateHome }: DownloadPageProps) {
           <PlatformCard
             delay={0.2}
             icon={<Monitor size={22} />}
-            title="Windows 桌面端"
-            subtitle="Tauri · 轻量原生"
-            features={['悬浮窗置顶', '系统托盘', '离线使用', '极低占用']}
+            badge={runningInTauri ? t('runningNow') : 'NEW'}
+            badgeColor={runningInTauri ? 'rest' : 'focus'}
+            title={t('windowsDesktop')}
+            subtitle="Tauri · Native"
+            features={[t('floatingOnTop'), t('systemTray'), t('offlineUse'), t('lowFootprint')]}
             primaryAction={{
-              label: '即将推出',
-              onClick: () => {},
+              label: runningInTauri ? t('runningNow') : t('download'),
+              onClick: () => {
+                if (runningInTauri) {
+                  onNavigateHome()
+                } else {
+                  window.open('https://github.com/YiyiChan11/zentimer/releases', '_blank')
+                }
+              },
             }}
-            disabled
+            disabled={false}
           />
 
           {/* Android */}
@@ -69,10 +81,10 @@ export function DownloadPage({ onNavigateHome }: DownloadPageProps) {
             delay={0.3}
             icon={<Smartphone size={22} />}
             title="Android"
-            subtitle="APK · 移动原生"
-            features={['悬浮通知', '后台计时', '锁屏提醒', '小部件']}
+            subtitle="APK · Mobile"
+            features={[t('floatingNotification'), t('backgroundTimer'), t('lockScreenReminder'), t('widget')]}
             primaryAction={{
-              label: '即将推出',
+              label: t('comingSoon'),
               onClick: () => {},
             }}
             disabled
@@ -88,20 +100,20 @@ export function DownloadPage({ onNavigateHome }: DownloadPageProps) {
         >
           <h3 className="text-sm font-medium text-ink-200 mb-3 flex items-center gap-2">
             <Globe size={15} className="text-focus-400" />
-            如何将网页版安装到桌面？
+            {t('pwaInstallTitle')}
           </h3>
           <ol className="space-y-2 text-sm text-ink-400">
             <li className="flex gap-3">
               <span className="text-focus-400 font-mono text-xs mt-0.5">01</span>
-              <span>在 Chrome 或 Edge 浏览器中打开 ZenTimer 网页版</span>
+              <span>{t('pwaStep1')}</span>
             </li>
             <li className="flex gap-3">
               <span className="text-focus-400 font-mono text-xs mt-0.5">02</span>
-              <span>点击地址栏右侧的安装图标（或菜单 → 安装此应用）</span>
+              <span>{t('pwaStep2')}</span>
             </li>
             <li className="flex gap-3">
               <span className="text-focus-400 font-mono text-xs mt-0.5">03</span>
-              <span>确认安装后，即可从桌面直接启动，享受原生应用体验</span>
+              <span>{t('pwaStep3')}</span>
             </li>
           </ol>
         </motion.div>
@@ -113,7 +125,7 @@ export function DownloadPage({ onNavigateHome }: DownloadPageProps) {
             className="inline-flex items-center gap-2 text-sm text-ink-400 hover:text-focus-300 transition-colors group"
           >
             <ArrowRight size={14} className="rotate-180 group-hover:-translate-x-0.5 transition-transform" />
-            返回计时器
+            {t('backToTimer')}
           </button>
         </div>
       </div>
@@ -184,12 +196,13 @@ function PlatformCard({
       <button
         onClick={primaryAction.onClick}
         disabled={disabled}
-        className={`w-full py-2.5 rounded-xl text-sm font-medium transition-all ${
+        className={`w-full py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
           disabled
             ? 'glass text-ink-500 cursor-not-allowed'
             : 'bg-focus-500 text-ink-950 hover:bg-focus-400'
         }`}
       >
+        {!disabled && <Download size={14} />}
         {primaryAction.label}
       </button>
     </motion.div>

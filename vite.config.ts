@@ -41,5 +41,10 @@ export default defineConfig({
   server: {
     host: true,
     port: 5180,
+    strictPort: !!process.env.TAURI_ENV_PLATFORM,
+  },
+  // Tauri build target
+  build: {
+    target: process.env.TAURI_ENV_PLATFORM === 'windows' ? 'chrome105' : 'esnext',
   },
 })

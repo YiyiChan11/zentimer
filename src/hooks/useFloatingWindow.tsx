@@ -1,18 +1,23 @@
 // ──────────────────────────────────────────────
-// useFloatingWindow — Document Picture-in-Picture
-// Creates a floating always-on-top mini timer window.
-// Double-click brings the main app back to focus.
+// useFloatingWindow — Floating always-on-top mini timer
+// Uses Tauri native window when available, falls back to Document PiP
 // ──────────────────────────────────────────────
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { useTimerStore } from '@/store/timerStore'
 import { formatTime, getProgress } from '@/utils/time'
+import { isTauri, showFloatingWindow, hideFloatingWindow, updateFloatingTimer } from '@/utils/tauri'
 import type { TimerPhase } from '@/types'
 
-// Check if Document PiP is supported
+// Check if Document PiP is supported (browser fallback)
 function isPiPSupported(): boolean {
   return typeof document !== 'undefined' && 'documentPictureInPicture' in document
+}
+
+// Check if any floating window method is available
+function isFloatingSupported(): boolean {
+  return isTauri() || isPiPSupported()
 }
 
 const PHASE_STYLES: Record<TimerPhase, { color: string; bg: string; label: string }> = {
@@ -22,7 +27,7 @@ const PHASE_STYLES: Record<TimerPhase, { color: string; bg: string; label: strin
   buffer: { color: '#fbc574', bg: '#1f1914', label: '微休息' },
 }
 
-/** The content rendered inside the PiP window */
+/** Content rendered inside the PiP window (browser mode only) */
 function FloatingContent() {
   const { phase, remaining, total } = useTimerStore()
   const style = PHASE_STYLES[phase]
@@ -48,12 +53,10 @@ function FloatingContent() {
         overflow: 'hidden',
       }}
       onDoubleClick={() => {
-        // Bring main window to focus
         window.focus()
         if (window.opener) window.opener.focus()
       }}
     >
-      {/* Subtle radial glow */}
       <div
         style={{
           position: 'absolute',
@@ -64,8 +67,6 @@ function FloatingContent() {
           filter: 'blur(60px)',
         }}
       />
-
-      {/* Phase label */}
       <div style={{ marginBottom: '16px', textAlign: 'center', zIndex: 1 }}>
         <div
           style={{
@@ -79,15 +80,8 @@ function FloatingContent() {
           {style.label}
         </div>
       </div>
-
-      {/* Circular progress */}
       <svg width="180" height="180" viewBox="0 0 180 180" style={{ transform: 'rotate(-90deg)', zIndex: 1 }}>
-        <circle
-          cx="90" cy="90" r={radius}
-          fill="none"
-          stroke="rgba(255,255,255,0.06)"
-          strokeWidth="3"
-        />
+        <circle cx="90" cy="90" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
         <circle
           cx="90" cy="90" r={radius}
           fill="none"
@@ -102,8 +96,6 @@ function FloatingContent() {
           }}
         />
       </svg>
-
-      {/* Time display */}
       <div
         style={{
           position: 'absolute',
@@ -127,8 +119,6 @@ function FloatingContent() {
           {formatTime(remaining > 0 ? remaining : 0)}
         </div>
       </div>
-
-      {/* Footer hint */}
       <div
         style={{
           position: 'absolute',
@@ -148,10 +138,27 @@ export function useFloatingWindow() {
   const [isOpen, setIsOpen] = useState(false)
   const pipWindowRef = useRef<Window | null>(null)
   const rootRef = useRef<Root | null>(null)
+  const { phase, remaining, total } = useTimerStore()
+
+  // Sync timer to Tauri native floating window
+  useEffect(() => {
+    if (isOpen && isTauri()) {
+      const progress = getProgress(remaining, total)
+      updateFloatingTimer(formatTime(remaining), phase, progress)
+    }
+  }, [isOpen, phase, remaining, total])
 
   const open = useCallback(async () => {
+    // ── Tauri native floating window ──
+    if (isTauri()) {
+      await showFloatingWindow()
+      setIsOpen(true)
+      return
+    }
+
+    // ── Browser fallback: Document PiP ──
     if (!isPiPSupported()) {
-      alert('当前浏览器不支持悬浮窗功能，请使用 Chrome 116+ 或 Edge 116+')
+      alert('当前浏览器不支持悬浮窗功能，请使用 Chrome 116+ 或 Edge 116+，或下载桌面版')
       return
     }
 
@@ -159,27 +166,22 @@ export function useFloatingWindow() {
       width: 240,
       height: 320,
     })
-
     pipWindowRef.current = pipWindow
 
-    // Copy styles
     document.querySelectorAll('style, link[rel="stylesheet"]').forEach((node) => {
       pipWindow.document.head.appendChild(node.cloneNode(true))
     })
 
-    // Create container
     const container = pipWindow.document.createElement('div')
     container.id = 'pip-root'
     pipWindow.document.body.appendChild(container)
     pipWindow.document.body.style.margin = '0'
     pipWindow.document.body.style.overflow = 'hidden'
 
-    // Render React content
     const root = createRoot(container)
     rootRef.current = root
     root.render(<FloatingContent />)
 
-    // Handle window close
     pipWindow.addEventListener('pagehide', () => {
       if (rootRef.current) {
         rootRef.current.unmount()
@@ -192,13 +194,17 @@ export function useFloatingWindow() {
     setIsOpen(true)
   }, [])
 
-  const close = useCallback(() => {
+  const close = useCallback(async () => {
+    if (isTauri()) {
+      await hideFloatingWindow()
+      setIsOpen(false)
+      return
+    }
     if (pipWindowRef.current) {
       pipWindowRef.current.close()
     }
   }, [])
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (rootRef.current) {
@@ -210,5 +216,5 @@ export function useFloatingWindow() {
     }
   }, [])
 
-  return { isOpen, open, close, supported: isPiPSupported() }
+  return { isOpen, open, close, supported: isFloatingSupported() }
 }
