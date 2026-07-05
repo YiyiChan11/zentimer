@@ -36,11 +36,11 @@ export function FixedTimeSlider() {
         </p>
       </div>
 
-      {/* Slider with range labels — matches Random style */}
+      {/* Slider with fixed range labels */}
       <div>
         <div className="flex justify-between mb-2">
           <span className="text-xs text-ink-400">5 {t('min')}</span>
-          <span className="text-xs text-ink-200 tabular">{value} {t('min')}</span>
+          <span className="text-xs text-ink-400">90 {t('min')}</span>
         </div>
         <input
           type="range"
@@ -51,10 +51,6 @@ export function FixedTimeSlider() {
           onChange={(e) => handleChange(Number(e.target.value))}
           className="w-full accent-focus-500"
         />
-        <div className="flex justify-between mt-1">
-          <span className="text-xs text-ink-500">5</span>
-          <span className="text-xs text-ink-500">90</span>
-        </div>
       </div>
 
       {/* Quick-select chips */}
