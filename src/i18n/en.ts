@@ -28,6 +28,7 @@ export const en: Record<string, string> = {
   randomTime: 'Random',
   min: 'min',
   randomRangeHint: 'The system will randomly select a duration within this range',
+  fixedTimeHint: 'Fixed focus duration',
 
   // Settings
   settings: 'Settings',

@@ -1,5 +1,6 @@
 // ──────────────────────────────────────────────
 // FixedTimeSlider — Slider for fixed time selection
+// Visual style matches Random mode (glass card + slider)
 // ──────────────────────────────────────────────
 
 import { useCallback } from 'react'
@@ -21,27 +22,34 @@ export function FixedTimeSlider() {
   )
 
   return (
-    <div className="w-full max-w-md space-y-5">
-      {/* Large current value display */}
-      <div className="text-center select-none">
-        <span className="text-6xl font-light tabular text-ink-50/90">
-          {value}
-        </span>
-        <span className="text-sm text-ink-400 ml-2">{t('min')}</span>
+    <div className="w-full space-y-5">
+      {/* Glass card — matches Random's range display */}
+      <div className="glass rounded-2xl p-6">
+        <div className="flex items-baseline justify-center gap-3">
+          <span className="text-4xl font-light text-focus-300 tabular">
+            {value}
+          </span>
+          <span className="text-sm text-ink-400">{t('min')}</span>
+        </div>
+        <p className="text-center text-xs text-ink-400 mt-2">
+          {t('fixedTimeHint')}
+        </p>
       </div>
 
       {/* Slider */}
-      <input
-        type="range"
-        min={5}
-        max={90}
-        step={5}
-        value={value}
-        onChange={(e) => handleChange(Number(e.target.value))}
-        className="w-full accent-focus-500"
-      />
+      <div>
+        <input
+          type="range"
+          min={5}
+          max={90}
+          step={5}
+          value={value}
+          onChange={(e) => handleChange(Number(e.target.value))}
+          className="w-full accent-focus-500"
+        />
+      </div>
 
-      {/* Quick-select chips + fine-tune */}
+      {/* Quick-select chips */}
       <div className="flex items-center justify-center gap-2">
         <button
           onClick={() => handleChange(Math.max(5, value - 5))}

@@ -28,6 +28,7 @@ export const zh: Record<string, string> = {
   randomTime: '随机时间',
   min: '分钟',
   randomRangeHint: '系统将在此范围内随机选择专注时长',
+  fixedTimeHint: '固定专注时长',
 
   // Settings
   settings: '设置',
