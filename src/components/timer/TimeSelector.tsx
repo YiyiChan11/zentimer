@@ -44,7 +44,7 @@ export function TimeSelector() {
       </div>
 
       {/* Content area — fixed min-height prevents layout shift */}
-      <div className="min-h-[280px] flex items-start justify-center">
+      <div className="min-h-[280px] w-full">
         <AnimatePresence mode="wait">
           {settings.selectionMode === 'fixed' ? (
             <motion.div
