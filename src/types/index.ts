@@ -11,6 +11,8 @@ export type TimerStatus = 'stopped' | 'running' | 'paused'
 /** Time selection mode */
 export type SelectionMode = 'fixed' | 'random'
 
+import type { TimerPhase } from './index'
+
 /** Complete settings object */
 export interface Settings {
   /** Selection mode: fixed time or random range */
@@ -25,7 +27,7 @@ export interface Settings {
   breakDuration: number
   /** Whether buffer breaks are enabled */
   bufferEnabled: boolean
-  /** Buffer trigger: random time between 3–15 min into focus */
+  /** Buffer trigger: random time between min-max min into focus */
   bufferMinMinute: number
   bufferMaxMinute: number
   /** Buffer break duration in seconds */
@@ -36,6 +38,8 @@ export interface Settings {
   autoStartBreak: boolean
   /** Auto-start next focus after break ends */
   autoStartFocus: boolean
+  /** UI language */
+  locale: Locale
 }
 
 /** Timer state snapshot */

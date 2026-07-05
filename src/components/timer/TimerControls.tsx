@@ -1,13 +1,15 @@
 // ──────────────────────────────────────────────
-// TimerControls — Start / Pause / Reset / Skip
+// TimerControls — Start / Pause / Reset / Skip (i18n ready)
 // ──────────────────────────────────────────────
 
 import { motion } from 'framer-motion'
 import { Play, Pause, RotateCcw, SkipForward, Check } from 'lucide-react'
 import { useTimerStore } from '@/store/timerStore'
+import { useT } from '@/i18n/useT'
 
 export function TimerControls() {
   const { phase, status, start, pause, resume, reset, skip } = useTimerStore()
+  const { t } = useT()
   const isIdle = phase === 'idle'
   const isRunning = status === 'running'
   const isPaused = status === 'paused'
@@ -22,7 +24,7 @@ export function TimerControls() {
           exit={{ opacity: 0, scale: 0.8 }}
           onClick={reset}
           className="w-12 h-12 rounded-full glass flex items-center justify-center text-ink-300 hover:text-ink-100 hover:bg-white/5 transition-all"
-          title="重置"
+          title={t('reset')}
         >
           <RotateCcw size={18} />
         </motion.button>
@@ -37,7 +39,7 @@ export function TimerControls() {
           className="px-10 py-4 rounded-full bg-focus-500 text-ink-950 font-semibold text-lg shadow-lg shadow-focus-500/20 hover:bg-focus-400 transition-colors flex items-center gap-2.5"
         >
           <Play size={20} fill="currentColor" />
-          开始专注
+          {t('startFocus')}
         </motion.button>
       ) : isRunning ? (
         <motion.button
@@ -47,7 +49,7 @@ export function TimerControls() {
           className="px-10 py-4 rounded-full glass text-ink-100 font-semibold text-lg hover:bg-white/5 transition-all flex items-center gap-2.5"
         >
           <Pause size={20} fill="currentColor" />
-          暂停
+          {t('pause')}
         </motion.button>
       ) : (
         <motion.button
@@ -57,7 +59,7 @@ export function TimerControls() {
           className="px-10 py-4 rounded-full bg-focus-500 text-ink-950 font-semibold text-lg shadow-lg shadow-focus-500/20 hover:bg-focus-400 transition-colors flex items-center gap-2.5"
         >
           <Play size={20} fill="currentColor" />
-          继续
+          {t('resume')}
         </motion.button>
       )}
 
@@ -69,7 +71,7 @@ export function TimerControls() {
           exit={{ opacity: 0, scale: 0.8 }}
           onClick={skip}
           className="w-12 h-12 rounded-full glass flex items-center justify-center text-ink-300 hover:text-ink-100 hover:bg-white/5 transition-all"
-          title={phase === 'focus' ? '跳过到休息' : '跳过到下一轮'}
+          title={phase === 'focus' ? t('skipToBreak') : t('skipToNext')}
         >
           {phase === 'focus' ? <SkipForward size={18} /> : <Check size={18} />}
         </motion.button>

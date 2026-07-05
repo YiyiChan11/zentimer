@@ -1,30 +1,18 @@
 // ──────────────────────────────────────────────
-// CircularTimer — The centerpiece SVG progress ring
+// CircularTimer — The centerpiece SVG progress ring (i18n ready)
 // ──────────────────────────────────────────────
 
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { formatTime, getProgress } from '@/utils/time'
+import { useT } from '@/i18n/useT'
 import type { TimerPhase } from '@/types'
 
-interface CircularTimerProps {
-  remaining: number
-  total: number
-  phase: TimerPhase
-}
-
-const PHASE_LABELS: Record<TimerPhase, string> = {
-  idle: '准备',
-  focus: '专注中',
-  break: '休息中',
-  buffer: '微休息',
-}
-
-const PHASE_LABELS_EN: Record<TimerPhase, string> = {
-  idle: 'Ready',
-  focus: 'Focus',
-  break: 'Break',
-  buffer: 'Micro Break',
+const PHASE_KEYS: Record<TimerPhase, { main: string; sub: string }> = {
+  idle:   { main: 'phaseReady',   sub: 'phaseReadyEn' },
+  focus:  { main: 'phaseFocus',   sub: 'phaseFocusEn' },
+  break:  { main: 'phaseBreak',   sub: 'phaseBreakEn' },
+  buffer: { main: 'phaseBuffer',  sub: 'phaseBufferEn' },
 }
 
 export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
@@ -32,6 +20,7 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
   const radius = 180
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference * (1 - progress)
+  const { t, locale } = useT()
 
   const colors = useMemo(() => {
     switch (phase) {
@@ -45,6 +34,8 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
         return { ring: '#827b70', glow: 'rgba(130, 123, 112, 0.15)', text: '#f7f6f4' }
     }
   }, [phase])
+
+  const labels = PHASE_KEYS[phase]
 
   return (
     <div
@@ -132,10 +123,10 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
             className="text-xs font-medium uppercase tracking-[0.3em]"
             style={{ color: colors.text }}
           >
-            {PHASE_LABELS[phase]}
+            {t(labels.main)}
           </span>
           <span className="text-[10px] text-ink-400 tracking-[0.2em] mt-0.5">
-            {PHASE_LABELS_EN[phase]}
+            {t(labels.sub)}
           </span>
         </motion.div>
 
@@ -154,11 +145,17 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
           />
           <span className="text-xs text-ink-400">
             {phase === 'idle'
-              ? '选择时间开始专注'
-              : `${Math.round(progress * 100)}% 已完成`}
+              ? (locale === 'zh' ? '选择时间开始专注' : 'Select time to start focus')
+              : `${Math.round(progress * 100)}% ${locale === 'zh' ? '已完成' : 'done'}`}
           </span>
         </div>
       </div>
     </div>
   )
+}
+
+interface CircularTimerProps {
+  remaining: number
+  total: number
+  phase: TimerPhase
 }

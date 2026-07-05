@@ -12,6 +12,19 @@ import { FloatingWindowButton } from '@/components/floating/FloatingWindowButton
 import { useTimerStore } from '@/store/timerStore'
 import { useFloatingWindow } from '@/hooks/useFloatingWindow'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { useT } from '@/i18n/useT'
+
+// Phase labels for document title (simple, no i18n needed for title)
+const PHASE_TITLE_ZH: Record<string, string> = {
+  focus: '专注',
+  break: '休息',
+  buffer: '微休息',
+}
+const PHASE_TITLE_EN: Record<string, string> = {
+  focus: 'Focus',
+  break: 'Break',
+  buffer: 'Buffer',
+}
 
 type View = 'home' | 'download'
 
@@ -20,6 +33,7 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { phase, remaining, total, completedSessions } = useTimerStore()
   const floatingWindow = useFloatingWindow()
+  const { t, locale } = useT()
   useKeyboardShortcuts()
 
   // Update body background class based on phase
@@ -30,15 +44,16 @@ function App() {
   // Update document title with timer
   useEffect(() => {
     if (phase === 'idle') {
-      document.title = 'ZenTimer — 禅意番茄钟'
+      document.title = t('appTitle')
     } else {
       const m = Math.floor(remaining / 60)
       const s = remaining % 60
       const time = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-      const label = phase === 'focus' ? '专注' : phase === 'break' ? '休息' : '微休息'
+      const labelMap = locale === 'zh' ? PHASE_TITLE_ZH : PHASE_TITLE_EN
+      const label = labelMap[phase] ?? phase
       document.title = `${time} · ${label} — ZenTimer`
     }
-  }, [phase, remaining])
+  }, [phase, remaining, locale, t])
 
   return (
     <div className="min-h-screen relative noise-overlay">
@@ -87,7 +102,7 @@ function App() {
                 transition={{ delay: 1 }}
                 className="mt-16 text-sm text-ink-500 italic font-serif"
               >
-                「静而后能安，安而后能虑，虑而后能得。」
+                {t('quote')}
               </motion.p>
             )}
           </motion.main>

@@ -1,32 +1,50 @@
-# React + TypeScript + Vite
+# ZenTimer — 禅意番茄钟
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+> 专注，呼吸，然后继续。
 
-Currently, two official plugins are available:
+A calm, elegant Pomodoro timer with a tea-ceremony-inspired aesthetic. Built for focus.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Flexible timing** — Fixed duration (5–90 min, 5-min steps) or random range mode
+- **Micro breaks** — Optional 15-second buffer break at a random point during focus (drink water, close your eyes)
+- **Break cycle** — Automatic rest period after each focus session (default 10 min)
+- **Volume control** — Adjustable with test playback; can go very loud
+- **Floating window** — Always-on-top mini timer (Document PiP), double-click to return
+- **Cross-platform** — Web + PWA (installable on desktop & mobile), Windows & Android planned
+- **Keyboard shortcuts** — Space to start/pause, Esc to reset
+- **Bilingual** — Chinese / English toggle
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the Oxlint configuration
+- React 18 + TypeScript + Vite
+- Tailwind CSS 3 (custom theme)
+- Framer Motion (animations)
+- Zustand (state, persisted)
+- Web Audio API (procedural sound, zero audio files)
+- Document Picture-in-Picture (floating window)
+- vite-plugin-pwa
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Getting Started
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev      # start dev server
+npm run build    # production build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Architecture
+
+```
+src/
+├── components/   # UI layer (layout / timer / settings / floating / download)
+├── hooks/        # useFloatingWindow, useKeyboardShortcuts
+├── store/        # timerStore (logic) + settingsStore (persisted)
+├── utils/        # audio engine, time formatting, random
+├── i18n/         # translations (zh / en)
+└── types/        # shared types
+```
+
+## License
+
+MIT

@@ -1,13 +1,15 @@
 // ──────────────────────────────────────────────
-// SettingsPanel — Slide-in settings drawer
+// SettingsPanel — Slide-in settings drawer (i18n ready)
 // ──────────────────────────────────────────────
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Volume2, Coffee, Zap, RotateCcw } from 'lucide-react'
+import { X, Volume2, Coffee, Zap, RotateCcw, Globe } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
 import { audioEngine } from '@/utils/audio'
 import { Toggle } from './Toggle'
 import { VolumeControl } from './VolumeControl'
+import { useT } from '@/i18n/useT'
+import type { Locale } from '@/types'
 
 interface SettingsPanelProps {
   open: boolean
@@ -16,6 +18,7 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const { settings, update, reset } = useSettingsStore()
+  const { t, locale, setLocale } = useT()
 
   return (
     <AnimatePresence>
@@ -42,8 +45,8 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             {/* Header */}
             <div className="sticky top-0 z-10 glass-strong px-6 py-5 flex items-center justify-between border-b border-white/5">
               <div>
-                <h2 className="text-lg font-semibold text-ink-50">设置</h2>
-                <p className="text-xs text-ink-400 mt-0.5">调整你的专注节奏</p>
+                <h2 className="text-lg font-semibold text-ink-50">{t('settings')}</h2>
+                <p className="text-xs text-ink-400 mt-0.5">{t('settingsDesc')}</p>
               </div>
               <button
                 onClick={onClose}
@@ -54,27 +57,50 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             </div>
 
             <div className="px-6 py-6 space-y-8">
+              {/* ── Language ── */}
+              <section>
+                <SectionTitle icon={<Globe size={15} />} title={t('language')} />
+                <div className="mt-4 flex gap-2">
+                  {([
+                    { code: 'zh' as Locale, label: t('languageZh') },
+                    { code: 'en' as Locale, label: t('languageEn') },
+                  ]).map(({ code, label }) => (
+                    <button
+                      key={code}
+                      onClick={() => setLocale(code)}
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                        locale === code
+                          ? 'bg-focus-500 text-ink-950'
+                          : 'glass text-ink-300 hover:text-ink-100'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
               {/* ── Break settings ── */}
               <section>
-                <SectionTitle icon={<Coffee size={15} />} title="休息设置" />
+                <SectionTitle icon={<Coffee size={15} />} title={t('breakSettings')} />
                 <div className="space-y-4 mt-4">
                   <NumberRow
-                    label="休息时长"
+                    label={t('breakDuration')}
                     value={settings.breakDuration}
-                    suffix="分钟"
+                    suffix={t('min')}
                     min={1}
                     max={30}
                     onChange={(v) => update({ breakDuration: v })}
                   />
                   <ToggleRow
-                    label="自动开始休息"
-                    description="专注结束后自动进入休息"
+                    label={t('autoStartBreak')}
+                    description={t('autoStartBreakDesc')}
                     checked={settings.autoStartBreak}
                     onChange={(v) => update({ autoStartBreak: v })}
                   />
                   <ToggleRow
-                    label="休息后自动专注"
-                    description="休息结束后使用相同设置继续"
+                    label={t('autoStartFocus')}
+                    description={t('autoStartFocusDesc')}
                     checked={settings.autoStartFocus}
                     onChange={(v) => update({ autoStartFocus: v })}
                   />
@@ -83,11 +109,11 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
 
               {/* ── Buffer break settings ── */}
               <section>
-                <SectionTitle icon={<Zap size={15} />} title="微休息提示" />
+                <SectionTitle icon={<Zap size={15} />} title={t('bufferSettings')} />
                 <div className="space-y-4 mt-4">
                   <ToggleRow
-                    label="启用微休息"
-                    description="专注中随机提醒15秒短暂休息（喝水/闭目）"
+                    label={t('bufferEnabled')}
+                    description={t('bufferEnabledDesc')}
                     checked={settings.bufferEnabled}
                     onChange={(v) => update({ bufferEnabled: v })}
                   />
@@ -99,16 +125,16 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                       className="space-y-4 pl-1"
                     >
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-ink-300">触发时间</span>
+                        <span className="text-ink-300">{t('bufferTriggerTime')}</span>
                         <span className="text-ink-400 text-xs">
-                          专注开始后 {settings.bufferMinMinute}–{settings.bufferMaxMinute} 分钟
+                          {t('bufferTriggerHint', { min: String(settings.bufferMinMinute), max: String(settings.bufferMaxMinute) })}
                         </span>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <NumberRow
-                          label="最早"
+                          label={t('earliest')}
                           value={settings.bufferMinMinute}
-                          suffix="分钟"
+                          suffix={t('min')}
                           min={1}
                           max={15}
                           onChange={(v) =>
@@ -118,9 +144,9 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                           }
                         />
                         <NumberRow
-                          label="最晚"
+                          label={t('latest')}
                           value={settings.bufferMaxMinute}
-                          suffix="分钟"
+                          suffix={t('min')}
                           min={3}
                           max={30}
                           onChange={(v) =>
@@ -131,7 +157,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                         />
                       </div>
                       <NumberRow
-                        label="微休息时长"
+                        label={t('bufferDuration')}
                         value={settings.bufferSeconds}
                         suffix="秒"
                         min={5}
@@ -145,7 +171,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
 
               {/* ── Volume settings ── */}
               <section>
-                <SectionTitle icon={<Volume2 size={15} />} title="音量设置" />
+                <SectionTitle icon={<Volume2 size={15} />} title={t('volumeSettings')} />
                 <div className="mt-4">
                   <VolumeControl
                     volume={settings.volume}
@@ -159,23 +185,21 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
               <section className="pt-4 border-t border-white/5">
                 <button
                   onClick={() => {
-                    if (confirm('确定要重置所有设置吗？')) {
+                    if (confirm(t('resetConfirm'))) {
                       reset()
                     }
                   }}
                   className="flex items-center gap-2 text-sm text-ink-400 hover:text-red-400 transition-colors"
                 >
                   <RotateCcw size={14} />
-                  重置为默认设置
+                  {t('resetSettings')}
                 </button>
               </section>
 
               {/* ── About ── */}
               <section className="pb-4">
                 <p className="text-center text-xs text-ink-600">
-                  ZenTimer v1.0 · 禅意番茄钟
-                  <br />
-                  <span className="text-ink-700">专注，呼吸，然后继续。</span>
+                  {t('version')}
                 </p>
               </section>
             </div>

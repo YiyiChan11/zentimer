@@ -2,17 +2,16 @@
 // TimeSelector — Choose focus time (fixed or random)
 // ──────────────────────────────────────────────
 
-import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Clock, Shuffle } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
+import { FixedTimeSlider } from './FixedTimeSlider'
+import { useT } from '@/i18n/useT'
 import type { SelectionMode } from '@/types'
-
-const FIXED_TIMES = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90]
 
 export function TimeSelector() {
   const { settings, update } = useSettingsStore()
-  const [editingRange, setEditingRange] = useState(false)
+  const { t } = useT()
 
   const setMode = (mode: SelectionMode) => update({ selectionMode: mode })
 
@@ -29,7 +28,7 @@ export function TimeSelector() {
           }`}
         >
           <Clock size={15} />
-          固定时间
+          {t('fixedTime')}
         </button>
         <button
           onClick={() => setMode('random')}
@@ -40,7 +39,7 @@ export function TimeSelector() {
           }`}
         >
           <Shuffle size={15} />
-          随机时间
+          {t('randomTime')}
         </button>
       </div>
 
@@ -53,23 +52,7 @@ export function TimeSelector() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
           >
-            {/* Fixed time grid */}
-            <div className="grid grid-cols-6 gap-2">
-              {FIXED_TIMES.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => update({ fixedDuration: t })}
-                  className={`relative py-3 rounded-xl text-sm font-medium transition-all ${
-                    settings.fixedDuration === t
-                      ? 'bg-focus-500/15 text-focus-300 ring-1 ring-focus-500/30'
-                      : 'glass text-ink-300 hover:text-ink-100 hover:bg-white/5'
-                  }`}
-                >
-                  {t}
-                  <span className="block text-[10px] text-ink-500 mt-0.5">min</span>
-                </button>
-              ))}
-            </div>
+            <FixedTimeSlider />
           </motion.div>
         ) : (
           <motion.div
@@ -90,17 +73,17 @@ export function TimeSelector() {
                 <span className="text-4xl font-light text-focus-300 tabular">
                   {settings.randomMax}
                 </span>
-                <span className="text-sm text-ink-400 ml-1">分钟</span>
+                <span className="text-sm text-ink-400 ml-1">{t('min')}</span>
               </div>
               <p className="text-center text-xs text-ink-400 mt-2">
-                系统将在此范围内随机选择专注时长
+                {t('randomRangeHint')}
               </p>
             </div>
 
             {/* Range sliders */}
             <div className="space-y-4">
               <RangeSlider
-                label="最小值"
+                label={t('earliest')}
                 value={settings.randomMin}
                 min={5}
                 max={90}
@@ -108,7 +91,7 @@ export function TimeSelector() {
                 onChange={(v) => update({ randomMin: Math.min(v, settings.randomMax - 5) })}
               />
               <RangeSlider
-                label="最大值"
+                label={t('latest')}
                 value={settings.randomMax}
                 min={5}
                 max={90}
@@ -139,11 +122,12 @@ function RangeSlider({
   step: number
   onChange: (v: number) => void
 }) {
+  const { t } = useT()
   return (
     <div>
       <div className="flex justify-between mb-2">
         <span className="text-xs text-ink-400">{label}</span>
-        <span className="text-xs text-ink-200 tabular">{value} min</span>
+        <span className="text-xs text-ink-200 tabular">{value} {t('min')}</span>
       </div>
       <input
         type="range"

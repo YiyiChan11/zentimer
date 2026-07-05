@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS: Settings = {
   volume: 50,
   autoStartBreak: true,
   autoStartFocus: false,
+  locale: 'zh',
 }
 
 interface SettingsStore {
