@@ -83,7 +83,7 @@ function App() {
             <CircularTimer remaining={remaining} total={total} phase={phase} />
 
             {/* Controls or selector */}
-            <div className="mt-10 flex flex-col items-center gap-8">
+            <div className="mt-10 flex flex-col items-center gap-8 w-full max-w-md">
               {phase === 'idle' ? (
                 <>
                   <TimeSelector />

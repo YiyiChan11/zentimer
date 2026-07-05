@@ -43,8 +43,8 @@ export function TimeSelector() {
         </button>
       </div>
 
-      {/* Content area — fixed min-height prevents layout shift */}
-      <div className="min-h-[280px] w-full">
+      {/* Content area — fixed size prevents any layout shift */}
+      <div className="w-full" style={{ minHeight: 280 }}>
         <AnimatePresence mode="wait">
           {settings.selectionMode === 'fixed' ? (
             <motion.div
@@ -54,6 +54,7 @@ export function TimeSelector() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
               className="w-full"
+              style={{ width: '100%' }}
             >
               <FixedTimeSlider />
             </motion.div>
@@ -65,6 +66,7 @@ export function TimeSelector() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
               className="w-full space-y-5"
+              style={{ width: '100%' }}
             >
               {/* Range display */}
               <div className="glass rounded-2xl p-6">
