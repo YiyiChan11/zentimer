@@ -43,65 +43,69 @@ export function TimeSelector() {
         </button>
       </div>
 
-      <AnimatePresence mode="wait">
-        {settings.selectionMode === 'fixed' ? (
-          <motion.div
-            key="fixed"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25 }}
-          >
-            <FixedTimeSlider />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="random"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25 }}
-            className="space-y-5"
-          >
-            {/* Range display */}
-            <div className="glass rounded-2xl p-6">
-              <div className="flex items-baseline justify-center gap-3">
-                <span className="text-4xl font-light text-focus-300 tabular">
-                  {settings.randomMin}
-                </span>
-                <span className="text-ink-500 text-lg">—</span>
-                <span className="text-4xl font-light text-focus-300 tabular">
-                  {settings.randomMax}
-                </span>
-                <span className="text-sm text-ink-400 ml-1">{t('min')}</span>
+      {/* Content area — fixed min-height prevents layout shift */}
+      <div className="min-h-[280px] flex items-start justify-center">
+        <AnimatePresence mode="wait">
+          {settings.selectionMode === 'fixed' ? (
+            <motion.div
+              key="fixed"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="w-full"
+            >
+              <FixedTimeSlider />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="random"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="w-full space-y-5"
+            >
+              {/* Range display */}
+              <div className="glass rounded-2xl p-6">
+                <div className="flex items-baseline justify-center gap-3">
+                  <span className="text-4xl font-light text-focus-300 tabular">
+                    {settings.randomMin}
+                  </span>
+                  <span className="text-ink-500 text-lg">—</span>
+                  <span className="text-4xl font-light text-focus-300 tabular">
+                    {settings.randomMax}
+                  </span>
+                  <span className="text-sm text-ink-400 ml-1">{t('min')}</span>
+                </div>
+                <p className="text-center text-xs text-ink-400 mt-2">
+                  {t('randomRangeHint')}
+                </p>
               </div>
-              <p className="text-center text-xs text-ink-400 mt-2">
-                {t('randomRangeHint')}
-              </p>
-            </div>
 
-            {/* Range sliders */}
-            <div className="space-y-4">
-              <RangeSlider
-                label={t('earliest')}
-                value={settings.randomMin}
-                min={5}
-                max={90}
-                step={5}
-                onChange={(v) => update({ randomMin: Math.min(v, settings.randomMax - 5) })}
-              />
-              <RangeSlider
-                label={t('latest')}
-                value={settings.randomMax}
-                min={5}
-                max={90}
-                step={5}
-                onChange={(v) => update({ randomMax: Math.max(v, settings.randomMin + 5) })}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {/* Range sliders */}
+              <div className="space-y-4">
+                <RangeSlider
+                  label={t('earliest')}
+                  value={settings.randomMin}
+                  min={5}
+                  max={90}
+                  step={5}
+                  onChange={(v) => update({ randomMin: Math.min(v, settings.randomMax - 5) })}
+                />
+                <RangeSlider
+                  label={t('latest')}
+                  value={settings.randomMax}
+                  min={5}
+                  max={90}
+                  step={5}
+                  onChange={(v) => update({ randomMax: Math.max(v, settings.randomMin + 5) })}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
