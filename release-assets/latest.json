@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "notes": "ZenTimer v1.0.0 — 禅意番茄钟首个发布版本",
+  "pub_date": "2026-07-06T08:48:32Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTMGFITjZEMSsxMk5PQmRaUE5SdHE4ZzMxdWd1aGI1T2djQ1JLbWp5dG1ibTJ3NFhSL0RpZGVneFF1Y3VLYkgreEZndm0yRngycVVib0RLTG9sckI5VElHSXRsb1QvMUE0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzMzI3Njg2CWZpbGU6WmVuVGltZXJfMS4wLjBfeDY0LXNldHVwLmV4ZQoyaGdOcUJTS0lNNzNtRC9sa1kvdFgrbm5hVG85OG1xRUhMRlBFYlZHSGdnU1JsUUp3Qm5UMWhycUJFbFd2T0xsWkxZTmNnRGJrUG1vWm12NHJHbDRDZz09Cg==",
+      "url": "https://github.com/YiyiChan11/zentimer/releases/download/v1.0.0/ZenTimer_1.0.0_x64-setup.exe"
+    }
+  }
+}

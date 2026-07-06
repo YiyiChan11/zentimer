@@ -3,12 +3,13 @@
 // ──────────────────────────────────────────────
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Volume2, Coffee, Zap, RotateCcw, Globe } from 'lucide-react'
+import { X, Volume2, Coffee, Zap, RotateCcw, Globe, PictureInPicture2 } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
 import { audioEngine } from '@/utils/audio'
 import { Toggle } from './Toggle'
 import { VolumeControl } from './VolumeControl'
 import { useT } from '@/i18n/useT'
+import { useFloatingWindow } from '@/hooks/useFloatingWindow'
 import type { Locale } from '@/types'
 
 interface SettingsPanelProps {
@@ -19,6 +20,7 @@ interface SettingsPanelProps {
 export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const { settings, update, reset } = useSettingsStore()
   const { t, locale, setLocale } = useT()
+  const floatingWindow = useFloatingWindow()
 
   return (
     <AnimatePresence>
@@ -178,6 +180,24 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                     onChange={(v) => update({ volume: v })}
                     onTest={() => audioEngine.testVolume()}
                   />
+                </div>
+              </section>
+
+              {/* ── Floating window ── */}
+              <section>
+                <SectionTitle icon={<PictureInPicture2 size={15} />} title={t('floatingWindow')} />
+                <div className="mt-4 space-y-3">
+                  <button
+                    onClick={() => (floatingWindow.isOpen ? floatingWindow.close() : floatingWindow.open())}
+                    className={`w-full py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      floatingWindow.isOpen
+                        ? 'bg-focus-500 text-white shadow-lg shadow-focus-500/30'
+                        : 'glass text-ink-300 hover:text-ink-100'
+                    }`}
+                  >
+                    {floatingWindow.isOpen ? t('floatingClose') : t('floatingOpen')}
+                  </button>
+                  <p className="text-xs text-ink-500">{t('floatingHint')}</p>
                 </div>
               </section>
 

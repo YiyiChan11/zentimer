@@ -20,8 +20,8 @@ export function FloatingWindowButton({ isOpen, onToggle }: FloatingWindowButtonP
       onClick={onToggle}
       className={`fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
         isOpen
-          ? 'bg-focus-500 text-ink-950 shadow-lg shadow-focus-500/30 scale-105'
-          : 'bg-ink-100/10 text-ink-200 hover:text-ink-50 hover:bg-ink-100/20 shadow-lg shadow-ink-950/20 border border-white/5'
+          ? 'bg-focus-500 text-white shadow-lg shadow-focus-500/40 scale-105'
+          : 'bg-ink-800/80 text-ink-300 hover:text-ink-100 hover:bg-ink-700/90 shadow-lg shadow-black/40 border border-ink-600/50'
       }`}
       title={isOpen ? '关闭悬浮窗' : '开启悬浮窗'}
     >
