@@ -6,9 +6,8 @@
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager, WebviewWindowBuilder, WebviewUrl,
+    Manager,
 };
-
 mod commands;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -24,8 +23,7 @@ pub fn run() {
             let menu = Menu::with_items(app, &[&show_item, &hide_item, &quit_item])?;
 
             // ── Create tray icon ──
-            let _tray = TrayIconBuilder::new()
-                .id("main-tray")
+            let _tray = TrayIconBuilder::with_id("main-tray")
                 .icon(app.default_window_icon().unwrap().clone())
                 .tooltip("ZenTimer")
                 .menu(&menu)
@@ -47,7 +45,7 @@ pub fn run() {
                     }
                     _ => {}
                 })
-                .on_tray_icon_event(|app, event| {
+                .on_tray_icon_event(|tray, event| {
                     // Double-click tray icon to toggle window
                     if let TrayIconEvent::Click {
                         button: MouseButton::Left,
@@ -55,6 +53,7 @@ pub fn run() {
                         ..
                     } = event
                     {
+                        let app = tray.app_handle();
                         if let Some(window) = app.get_webview_window("main") {
                             if window.is_visible().unwrap_or(false) {
                                 let _ = window.hide();

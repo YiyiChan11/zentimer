@@ -3,7 +3,6 @@
 // ──────────────────────────────────────────────
 
 import { Volume2, Volume1, VolumeX, Volume } from 'lucide-react'
-import { audioEngine } from '@/utils/audio'
 
 interface VolumeControlProps {
   volume: number

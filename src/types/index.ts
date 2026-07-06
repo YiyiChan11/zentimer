@@ -11,7 +11,8 @@ export type TimerStatus = 'stopped' | 'running' | 'paused'
 /** Time selection mode */
 export type SelectionMode = 'fixed' | 'random'
 
-import type { TimerPhase } from './index'
+/** UI language */
+export type Locale = 'zh' | 'en'
 
 /** Complete settings object */
 export interface Settings {

@@ -87,12 +87,6 @@ export const zh: Record<string, string> = {
   pwaStep2: '点击地址栏右侧的安装图标（或菜单 → 安装此应用）',
   pwaStep3: '确认安装后，即可从桌面直接启动，享受原生应用体验',
 
-  // PWA install hint
-  pwaTitle: '如何将网页版安装到桌面？',
-  pwaStep1: '在 Chrome 或 Edge 浏览器中打开 ZenTimer 网页版',
-  pwaStep2: '点击地址栏右侧的安装图标（或菜单 → 安装此应用）',
-  pwaStep3: '确认安装后，即可从桌面直接启动，享受原生应用体验',
-
   // Language
   language: '语言',
   languageZh: '简体中文',

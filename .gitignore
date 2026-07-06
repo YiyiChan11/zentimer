@@ -8,6 +8,8 @@ dist
 dist-ssr
 build
 *.local
+src-tauri/target/
+src-tauri/gen/
 
 # ── Logs ──
 logs

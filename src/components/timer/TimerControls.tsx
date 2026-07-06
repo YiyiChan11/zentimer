@@ -12,7 +12,6 @@ export function TimerControls() {
   const { t } = useT()
   const isIdle = phase === 'idle'
   const isRunning = status === 'running'
-  const isPaused = status === 'paused'
 
   return (
     <div className="flex items-center gap-4">

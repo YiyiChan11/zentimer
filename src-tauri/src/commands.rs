@@ -2,7 +2,7 @@
 // Tauri IPC Commands
 // ──────────────────────────────────────────────
 
-use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 
 /// Show the native floating window (always-on-top, small, borderless)
 #[tauri::command]
