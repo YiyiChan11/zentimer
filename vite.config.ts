@@ -3,11 +3,15 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
+// PWA only for web builds — Tauri desktop app must NOT register a Service Worker,
+// because the SW caches old assets and prevents updates from taking effect.
+const isTauri = !!process.env.TAURI_ENV_PLATFORM
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    VitePWA({
+    !isTauri && VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
@@ -32,7 +36,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
       },
     }),
-  ],
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
