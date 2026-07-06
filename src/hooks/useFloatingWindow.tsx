@@ -256,14 +256,21 @@ export function useFloatingWindow() {
   }, [isOpen])
 
   const open = useCallback(async () => {
-    // ── 1. Tauri native floating window ──
+    // ── 1. Tauri native floating window (preferred) ──
     if (isTauri()) {
-      await showFloatingWindow()
-      setIsOpen(true)
-      return
+      try {
+        await showFloatingWindow()
+        setIsOpen(true)
+        return
+      } catch (e) {
+        console.error('[FloatingWindow] Tauri native window failed:', e)
+        // Don't fall through to window.open — show helpful message
+        alert('悬浮窗打开失败，请检查应用权限设置')
+        return
+      }
     }
 
-    // ── 2. Document PiP (Chrome 116+) ──
+    // ── 2. Document PiP (Chrome 116+, browser only) ──
     if (isPiPSupported()) {
       try {
         const pipWindow = await (document as any).documentPictureInPicture.requestWindow({

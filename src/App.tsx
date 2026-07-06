@@ -106,12 +106,6 @@ function App() {
                 {t('quote')}
               </motion.p>
             )}
-
-            {/* Floating window button — always visible in home view */}
-            <FloatingWindowButton
-              isOpen={floatingWindow.isOpen}
-              onToggle={() => (floatingWindow.isOpen ? floatingWindow.close() : floatingWindow.open())}
-            />
           </motion.main>
         ) : (
           <motion.main
@@ -125,6 +119,14 @@ function App() {
           </motion.main>
         )}
       </AnimatePresence>
+
+      {/* Floating window button — fixed bottom-right */}
+      {view === 'home' && (
+        <FloatingWindowButton
+          isOpen={floatingWindow.isOpen}
+          onToggle={() => (floatingWindow.isOpen ? floatingWindow.close() : floatingWindow.open())}
+        />
+      )}
 
       {/* Buffer toast */}
       <BufferToast show={phase === 'buffer'} remaining={remaining} />
