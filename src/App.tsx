@@ -124,7 +124,6 @@ function App() {
         <FloatingWindowButton
           isOpen={floatingWindow.isOpen}
           onToggle={() => (floatingWindow.isOpen ? floatingWindow.close() : floatingWindow.open())}
-          supported={floatingWindow.supported}
         />
       )}
 
