@@ -14,6 +14,8 @@ mod commands;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
             // ── Build tray menu ──
             let show_item = MenuItem::with_id(app, "show", "显示窗口", true, None::<&str>)?;

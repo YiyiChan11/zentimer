@@ -51,5 +51,13 @@
     "category": "Productivity",
     "shortDescription": "禅意番茄钟",
     "longDescription": "ZenTimer — 一个禅意极简的番茄钟应用，帮助你专注、呼吸，然后继续。"
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ4QjU1RjBGN0E3MzY4QjQKUldTMGFITjZEMSsxMkt0RFVRQzJPbjBlNGpmRnNZcUEyRWxRNFZrYlZTUGxwSFVDOTRwUlM4MkIK",
+      "endpoints": [
+        "https://github.com/YiyiChan11/zentimer/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

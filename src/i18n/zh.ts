@@ -102,4 +102,12 @@ export const zh: Record<string, string> = {
   keyboardHint: '空格 开始/暂停 · Esc 重置',
   quote: '「静而后能安，安而后能虑，虑而后能得。」',
   version: 'v1.0 · 禅意番茄钟',
+
+  // Auto-update
+  updateAvailable: '发现新版本',
+  updateNow: '立即更新',
+  updateDownloading: '正在下载更新…',
+  updateRestarting: '更新完成，正在重启…',
+  updateFailed: '更新失败',
+  checkUpdate: '检查更新',
 }

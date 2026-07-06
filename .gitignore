@@ -38,6 +38,9 @@ desktop.ini
 # ── PRIVACY: WorkBuddy workspace data (identity, memory, automations) ──
 .workbuddy/
 
+# ── PRIVACY: Tauri signing keys ──
+.tauri/
+
 # ── PRIVACY: Environment & secrets ──
 .env
 .env.*

@@ -7,6 +7,7 @@ import { TimeSelector } from '@/components/timer/TimeSelector'
 import { SessionStats } from '@/components/timer/SessionStats'
 import { BufferToast } from '@/components/timer/BufferToast'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
+import { UpdateNotification } from '@/components/settings/UpdateNotification'
 import { DownloadPage } from '@/components/download/DownloadPage'
 import { FloatingWindowButton } from '@/components/floating/FloatingWindowButton'
 import { useTimerStore } from '@/store/timerStore'
@@ -132,6 +133,9 @@ function App() {
 
       {/* Settings panel */}
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      {/* Auto-update notification */}
+      <UpdateNotification />
     </div>
   )
 }

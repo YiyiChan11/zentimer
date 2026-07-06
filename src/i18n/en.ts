@@ -102,4 +102,12 @@ export const en: Record<string, string> = {
   keyboardHint: 'Space to start/pause · Esc to reset',
   quote: '"Stillness leads to peace, peace leads to clarity, clarity leads to result."',
   version: 'v1.0 · ZenTimer',
+
+  // Auto-update
+  updateAvailable: 'Update available',
+  updateNow: 'Update now',
+  updateDownloading: 'Downloading update…',
+  updateRestarting: 'Update complete, restarting…',
+  updateFailed: 'Update failed',
+  checkUpdate: 'Check for updates',
 }
