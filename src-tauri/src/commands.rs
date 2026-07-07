@@ -2,7 +2,7 @@
 // Tauri IPC Commands
 // ──────────────────────────────────────────────
 
-use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 
 /// Show the native floating window (always-on-top, small, borderless)
 #[tauri::command]
@@ -81,6 +81,27 @@ pub async fn update_floating_timer(
             serde_json::to_string(&payload).map_err(|e| e.to_string())?
         );
         window.eval(&js).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// Toggle (pause/resume) the timer when the floating window is single-tapped.
+/// The timer state lives in the frontend, so we emit an event to the main
+/// window which performs the actual toggle.
+#[tauri::command]
+pub async fn floating_toggle_timer(app: AppHandle) -> Result<(), String> {
+    app.emit_to("main", "floating-toggle", ())
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Bring the main window to the front when the floating window is double-tapped.
+#[tauri::command]
+pub async fn floating_show_main(app: AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.unminimize();
+        window.show().map_err(|e| e.to_string())?;
+        window.set_focus().map_err(|e| e.to_string())?;
     }
     Ok(())
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import { Header } from '@/components/layout/Header'
 import { CircularTimer } from '@/components/timer/CircularTimer'
 import { TimerControls } from '@/components/timer/TimerControls'
@@ -14,6 +15,7 @@ import { useTimerStore } from '@/store/timerStore'
 import { useFloatingWindow } from '@/hooks/useFloatingWindow'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useT } from '@/i18n/useT'
+import { isTauri } from '@/utils/tauri'
 
 // Phase labels for document title (simple, no i18n needed for title)
 const PHASE_TITLE_ZH: Record<string, string> = {
@@ -36,6 +38,24 @@ function App() {
   const floatingWindow = useFloatingWindow()
   const { t, locale } = useT()
   useKeyboardShortcuts()
+
+  // Listen for actions triggered from the native floating window
+  // (single tap → pause/resume). Double tap → open main is handled in Rust.
+  useEffect(() => {
+    if (!isTauri()) return
+    let unlisten: (() => void) | undefined
+    getCurrentWindow()
+      .listen('floating-toggle', () => {
+        useTimerStore.getState().toggle()
+      })
+      .then((u) => {
+        unlisten = u
+      })
+      .catch(() => {})
+    return () => {
+      unlisten?.()
+    }
+  }, [])
 
   // Update body background class based on phase
   useEffect(() => {

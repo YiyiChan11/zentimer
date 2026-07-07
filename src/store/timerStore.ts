@@ -30,6 +30,7 @@ interface TimerStore {
   start: () => void
   pause: () => void
   resume: () => void
+  toggle: () => void
   reset: () => void
   skip: () => void
   tick: () => void
@@ -122,6 +123,15 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
     audioEngine.unlock()
     set({ status: 'running' })
     get()._startInterval()
+  },
+
+  toggle: () => {
+    const { status } = get()
+    if (status === 'running') {
+      get().pause()
+    } else if (status === 'paused') {
+      get().resume()
+    }
   },
 
   reset: () => {

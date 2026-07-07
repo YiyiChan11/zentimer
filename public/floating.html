@@ -28,7 +28,8 @@
       align-items: center;
       justify-content: center;
       cursor: grab;
-      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      touch-action: none;
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
       position: relative;
     }
@@ -41,6 +42,10 @@
     #container.break {
       border-color: rgba(45, 212, 191, 0.3);
       box-shadow: 0 8px 32px rgba(45, 212, 191, 0.15);
+    }
+    #container.paused {
+      opacity: 0.5;
+      filter: grayscale(0.35);
     }
     #time {
       font-size: 28px;
@@ -125,6 +130,7 @@
         break: 'Break',
         buffer: 'Buffer',
         idle: 'Ready',
+        paused: 'Paused',
       };
       phaseEl.textContent = phaseMap[data.phase] || data.phase;
 
@@ -132,6 +138,7 @@
       container.className = '';
       if (data.phase === 'focus') container.classList.add('focus');
       else if (data.phase === 'break' || data.phase === 'buffer') container.classList.add('break');
+      else if (data.phase === 'paused') container.classList.add('paused');
 
       // Progress bar (0-1 -> 0-156)
       progressBar.setAttribute('width', String(156 * data.progress));
@@ -144,51 +151,86 @@
       }
     };
 
-    // ── Drag: hold and move to drag the borderless window ──
-    var mouseDownPos = null;
-    var isDragging = false;
+    // ── Interactions ──
+    // Single tap  → pause / resume  (floating_toggle_timer)
+    // Double tap  → open main window (floating_show_main)
+    // Long press  → drag the window  (drag_floating_window)
+    // × button    → close floating window
+    var pressInfo = null;   // { x, y, longTimer }
+    var dragging = false;
+    var moved = false;
+    var lastTap = 0;
+    var tapTimer = null;
+    var LONG_PRESS_MS = 350;
+    var MOVE_THRESHOLD = 5;
+    var DOUBLE_TAP_MS = 300;
+    var SINGLE_TAP_DELAY = 280;
 
-    container.addEventListener('mousedown', function(e) {
-      if (e.target === closeBtn) return;
-      mouseDownPos = { x: e.screenX, y: e.screenY };
+    function startDrag() {
+      if (dragging) return;
+      dragging = true;
+      invoke('drag_floating_window').catch(function(){});
+    }
+
+    function resetPress() {
+      if (pressInfo) clearTimeout(pressInfo.longTimer);
+      pressInfo = null;
+      dragging = false;
+    }
+
+    container.addEventListener('pointerdown', function(e) {
+      if (e.target === closeBtn) return; // let close button handle itself
+      pressInfo = { x: e.clientX, y: e.clientY };
+      moved = false;
+      var timer = setTimeout(function() {
+        startDrag(); // long press → drag
+      }, LONG_PRESS_MS);
+      pressInfo.longTimer = timer;
     });
 
-    container.addEventListener('mousemove', function(e) {
-      if (!mouseDownPos || isDragging) return;
-      var dx = Math.abs(e.screenX - mouseDownPos.x);
-      var dy = Math.abs(e.screenY - mouseDownPos.y);
-      if (dx > 3 || dy > 3) {
-        isDragging = true;
-        invoke('drag_floating_window').catch(function(){});
+    window.addEventListener('pointermove', function(e) {
+      if (!pressInfo) return;
+      var dx = e.clientX - pressInfo.x;
+      var dy = e.clientY - pressInfo.y;
+      if (Math.hypot(dx, dy) > MOVE_THRESHOLD) moved = true;
+      if (!dragging && moved) {
+        clearTimeout(pressInfo.longTimer);
+        startDrag(); // moved before long-press fired → drag
       }
     });
 
-    container.addEventListener('mouseup', function() {
-      mouseDownPos = null;
-      setTimeout(function() { isDragging = false; }, 100);
-    });
+    function endPress() {
+      if (!pressInfo) return;
+      clearTimeout(pressInfo.longTimer);
+      var wasDragging = dragging;
+      dragging = false;
+      pressInfo = null;
+      if (wasDragging || moved) return; // a drag or stray move, not a tap
+
+      var now = Date.now();
+      if (now - lastTap < DOUBLE_TAP_MS) {
+        // Double tap → open main window
+        lastTap = 0;
+        if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; }
+        invoke('floating_show_main').catch(function(){});
+      } else {
+        // Single tap → pause / resume (after a short delay to detect double tap)
+        lastTap = now;
+        tapTimer = setTimeout(function() {
+          tapTimer = null;
+          invoke('floating_toggle_timer').catch(function(){});
+        }, SINGLE_TAP_DELAY);
+      }
+    }
+
+    window.addEventListener('pointerup', endPress);
+    window.addEventListener('pointercancel', resetPress);
+    window.addEventListener('blur', resetPress);
 
     // ── Close button ──
     closeBtn.addEventListener('click', function(e) {
       e.stopPropagation();
       invoke('close_floating_window').catch(function(){});
-    });
-
-    // ── Double-click anywhere to close ──
-    var clickCount = 0;
-    var clickTimer = null;
-
-    container.addEventListener('click', function(e) {
-      if (e.target === closeBtn) return;
-      if (isDragging) return;
-      clickCount++;
-      if (clickCount === 1) {
-        clickTimer = setTimeout(function() { clickCount = 0; }, 300);
-      } else if (clickCount === 2) {
-        clearTimeout(clickTimer);
-        clickCount = 0;
-        invoke('close_floating_window').catch(function(){});
-      }
     });
   </script>
 </body>

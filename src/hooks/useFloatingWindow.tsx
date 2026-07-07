@@ -207,15 +207,16 @@ export function useFloatingWindow() {
   const rootRef = useRef<Root | null>(null)
   const popupRef = useRef<Window | null>(null)
   const bcRef = useRef<BroadcastChannel | null>(null)
-  const { phase, remaining, total } = useTimerStore()
+  const { phase, remaining, total, status } = useTimerStore()
 
   // Sync timer to Tauri native floating window
   useEffect(() => {
     if (isOpen && isTauri()) {
       const progress = getProgress(remaining, total)
-      updateFloatingTimer(formatTime(remaining), phase, progress)
+      const displayPhase = status === 'paused' ? 'paused' : phase
+      updateFloatingTimer(formatTime(remaining), displayPhase, progress)
     }
-  }, [isOpen, phase, remaining, total])
+  }, [isOpen, phase, remaining, total, status])
 
   // Sync timer to popup via BroadcastChannel
   useEffect(() => {
