@@ -16,6 +16,7 @@ import { useFloatingWindow } from '@/hooks/useFloatingWindow'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useT } from '@/i18n/useT'
 import { isTauri } from '@/utils/tauri'
+import { useUpdaterStore } from '@/store/updaterStore'
 
 // Phase labels for document title (simple, no i18n needed for title)
 const PHASE_TITLE_ZH: Record<string, string> = {
@@ -55,6 +56,15 @@ function App() {
     return () => {
       unlisten?.()
     }
+  }, [])
+
+  // Auto-update: fetch version + check once on startup (Tauri only)
+  useEffect(() => {
+    if (!isTauri()) return
+    const store = useUpdaterStore.getState()
+    store.init()
+    const timer = setTimeout(() => store.checkForUpdates(), 2000)
+    return () => clearTimeout(timer)
   }, [])
 
   // Update body background class based on phase

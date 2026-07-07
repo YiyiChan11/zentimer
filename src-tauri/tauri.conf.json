@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nickel-org/nickel.rs/master/schema.json",
   "productName": "ZenTimer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "identifier": "com.zentimer.app",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -56,7 +56,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ4QjU1RjBGN0E3MzY4QjQKUldTMGFITjZEMSsxMkt0RFVRQzJPbjBlNGpmRnNZcUEyRWxRNFZrYlZTUGxwSFVDOTRwUlM4MkIK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI1MURFOEQ4M0VFMURBQkQKUldTOTJ1RSsyT2dkdFdjeC9BUi9GbHI3bnF3RE9ockFESWUzR2hLUTkydzBCZE9IR00rOGFSY1oK",
       "endpoints": [
         "https://github.com/YiyiChan11/zentimer/releases/latest/download/latest.json"
       ]

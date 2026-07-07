@@ -3,13 +3,14 @@
 // ──────────────────────────────────────────────
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Volume2, Coffee, Zap, RotateCcw, Globe, PictureInPicture2 } from 'lucide-react'
+import { X, Volume2, Coffee, Zap, RotateCcw, Globe, PictureInPicture2, RefreshCw } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
 import { audioEngine } from '@/utils/audio'
 import { Toggle } from './Toggle'
 import { VolumeControl } from './VolumeControl'
 import { useT } from '@/i18n/useT'
 import { useFloatingWindow } from '@/hooks/useFloatingWindow'
+import { useUpdaterStore } from '@/store/updaterStore'
 import type { Locale } from '@/types'
 
 interface SettingsPanelProps {
@@ -21,6 +22,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const { settings, update, reset } = useSettingsStore()
   const { t, locale, setLocale } = useT()
   const floatingWindow = useFloatingWindow()
+  const updater = useUpdaterStore()
 
   return (
     <AnimatePresence>
@@ -198,6 +200,38 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                     {floatingWindow.isOpen ? t('floatingClose') : t('floatingOpen')}
                   </button>
                   <p className="text-xs text-ink-500">{t('floatingHint')}</p>
+                </div>
+              </section>
+
+              {/* ── Update ── */}
+              <section>
+                <SectionTitle icon={<RefreshCw size={15} />} title={t('update')} />
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-ink-300">{t('currentVersion')}</span>
+                    <span className="text-ink-400 text-xs tabular">v{updater.currentVersion || '—'}</span>
+                  </div>
+                  <button
+                    onClick={() => updater.checkForUpdates()}
+                    disabled={updater.status === 'checking' || updater.status === 'downloading'}
+                    className="w-full py-2.5 rounded-xl text-sm font-medium transition-all glass text-ink-300 hover:text-ink-100 disabled:opacity-50"
+                  >
+                    {updater.status === 'checking' ? t('updateChecking') : t('checkUpdate')}
+                  </button>
+                  {updater.status === 'available' && (
+                    <button
+                      onClick={() => updater.downloadAndInstall()}
+                      className="w-full py-2.5 rounded-xl text-sm font-medium bg-focus-500 text-white shadow-lg shadow-focus-500/30 transition-all"
+                    >
+                      {t('updateNow')} v{updater.updateInfo?.version}
+                    </button>
+                  )}
+                  {updater.status === 'not-available' && (
+                    <p className="text-xs text-ink-500">{t('updateUpToDate')}</p>
+                  )}
+                  {updater.status === 'error' && (
+                    <p className="text-xs text-red-400 break-all">{updater.errorMsg}</p>
+                  )}
                 </div>
               </section>
 

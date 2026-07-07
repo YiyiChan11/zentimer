@@ -5,12 +5,12 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { Download, Check, Loader2, X, AlertCircle, Sparkles } from 'lucide-react'
-import { useUpdater } from '@/hooks/useUpdater'
+import { useUpdaterStore } from '@/store/updaterStore'
 import { useT } from '@/i18n/useT'
 
 export function UpdateNotification() {
   const { t } = useT()
-  const { status, updateInfo, downloadProgress, errorMsg, downloadAndInstall, dismiss } = useUpdater()
+  const { status, updateInfo, downloadProgress, errorMsg, downloadAndInstall, dismiss } = useUpdaterStore()
 
   // Only show in Tauri (desktop) environment
   if (status === 'idle' || status === 'checking' || status === 'not-available') return null
