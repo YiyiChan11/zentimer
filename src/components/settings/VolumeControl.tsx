@@ -3,6 +3,7 @@
 // ──────────────────────────────────────────────
 
 import { Volume2, Volume1, VolumeX, Volume } from 'lucide-react'
+import { useT } from '@/i18n/useT'
 
 interface VolumeControlProps {
   volume: number
@@ -11,6 +12,7 @@ interface VolumeControlProps {
 }
 
 export function VolumeControl({ volume, onChange, onTest }: VolumeControlProps) {
+  const { t } = useT()
   const getIcon = () => {
     if (volume === 0) return <VolumeX size={18} />
     if (volume < 33) return <Volume1 size={18} />
@@ -40,7 +42,7 @@ export function VolumeControl({ volume, onChange, onTest }: VolumeControlProps) 
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-ink-500">轻</span>
+          <span className="text-[10px] text-ink-500">{t('volumeLight')}</span>
           <div className="flex gap-0.5">
             {[1, 2, 3, 4, 5].map((n) => (
               <div
@@ -54,20 +56,18 @@ export function VolumeControl({ volume, onChange, onTest }: VolumeControlProps) 
               />
             ))}
           </div>
-          <span className="text-[10px] text-ink-500">极响</span>
+          <span className="text-[10px] text-ink-500">{t('volumeLoud')}</span>
         </div>
         <button
           onClick={onTest}
           className="text-xs text-focus-400 hover:text-focus-300 transition-colors flex items-center gap-1"
         >
           <Volume2 size={12} />
-          试听
+          {t('volumeTest')}
         </button>
       </div>
 
-      <p className="text-xs text-ink-500">
-        提示：当前默认为中等音量。可调至更高以获得更强提醒效果。
-      </p>
+      <p className="text-xs text-ink-500">{t('volumeHint')}</p>
     </div>
   )
 }

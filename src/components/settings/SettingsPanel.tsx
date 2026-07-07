@@ -2,6 +2,7 @@
 // SettingsPanel — Slide-in settings drawer (i18n ready)
 // ──────────────────────────────────────────────
 
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Volume2, Coffee, Zap, RotateCcw, Globe, PictureInPicture2, RefreshCw } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
@@ -312,6 +313,26 @@ function NumberRow({
   max: number
   onChange: (v: number) => void
 }) {
+  const [text, setText] = useState(String(value))
+
+  // Keep the input in sync when value changes externally (e.g. +/- buttons)
+  useEffect(() => {
+    setText(String(value))
+  }, [value])
+
+  const commit = (raw: string) => {
+    const digits = raw.replace(/\D/g, '')
+    if (digits === '') {
+      setText(String(value))
+      return
+    }
+    let n = parseInt(digits, 10)
+    if (isNaN(n)) n = min
+    n = Math.min(max, Math.max(min, n))
+    onChange(n)
+    setText(String(n))
+  }
+
   return (
     <div className="flex items-center justify-between">
       <span className="text-sm text-ink-200">{label}</span>
@@ -322,10 +343,18 @@ function NumberRow({
         >
           −
         </button>
-        <div className="w-16 text-center">
-          <span className="text-sm text-ink-100 tabular">{value}</span>
-          <span className="text-xs text-ink-500 ml-1">{suffix}</span>
-        </div>
+        <input
+          type="text"
+          inputMode="numeric"
+          value={text}
+          onChange={(e) => setText(e.target.value.replace(/\D/g, ''))}
+          onBlur={(e) => commit(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+          }}
+          className="w-14 text-center bg-transparent text-sm text-ink-100 tabular border border-white/10 rounded-md py-1 focus:outline-none focus:border-focus-400"
+        />
+        <span className="text-xs text-ink-500">{suffix}</span>
         <button
           onClick={() => onChange(Math.min(max, value + 1))}
           className="w-7 h-7 rounded-lg glass flex items-center justify-center text-ink-300 hover:text-ink-100 transition-all text-sm"
