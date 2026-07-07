@@ -19,7 +19,6 @@ interface TimerStore {
   total: number           // seconds (current phase total)
   completedSessions: number
   currentFocusDuration: number  // seconds (the actual chosen duration)
-  bufferTriggered: boolean
   lastSettings: Settings | null
 
   // ── Internal ──
@@ -58,6 +57,25 @@ function computeBufferTime(settings: Settings, focusDurationSec: number): number
   return randomInt(lowerBound, upperBound)
 }
 
+/**
+ * Compute the NEXT buffer trigger offset (seconds into focus) after the
+ * current one. Micro breaks fire repeatedly throughout a focus session,
+ * each spaced by a random interval in [min, max] minutes. Returns -1 when
+ * the next one would land too close to the end of the session.
+ */
+function computeNextBufferTime(
+  settings: Settings,
+  currentOffset: number,
+  focusDurationSec: number,
+): number {
+  const minSec = settings.bufferMinMinute * 60
+  const maxSec = settings.bufferMaxMinute * 60
+  const next = currentOffset + randomInt(minSec, maxSec)
+  const upperBound = focusDurationSec - 30
+  if (next > upperBound) return -1 // no more buffers this session
+  return next
+}
+
 export const useTimerStore = create<TimerStore>((set, get) => ({
   // ── Initial state ──
   phase: 'idle',
@@ -66,7 +84,6 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
   total: 0,
   completedSessions: 0,
   currentFocusDuration: 0,
-  bufferTriggered: false,
   lastSettings: null,
   _intervalId: null,
   _bufferTime: -1,
@@ -88,7 +105,6 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
       remaining: focusDuration,
       total: focusDuration,
       currentFocusDuration: focusDuration,
-      bufferTriggered: false,
       lastSettings: { ...settings },
       _bufferTime: bufferTime,
     })
@@ -116,7 +132,6 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
       status: 'stopped',
       remaining: 0,
       total: 0,
-      bufferTriggered: false,
       _bufferTime: -1,
       _intervalId: null,
     })
@@ -153,7 +168,6 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
           remaining: focusDuration,
           total: focusDuration,
           currentFocusDuration: focusDuration,
-          bufferTriggered: false,
           _bufferTime: bufferTime,
           _intervalId: null,
         })
@@ -177,37 +191,40 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
     const newRemaining = state.remaining - 1
 
     // ── Buffer trigger check (during focus) ──
-    if (
-      state.phase === 'focus' &&
-      !state.bufferTriggered &&
-      state._bufferTime > 0
-    ) {
+    // Micro breaks can fire multiple times per focus session; each is
+    // scheduled at a random offset computed when the previous one ends.
+    if (state.phase === 'focus' && state._bufferTime > 0) {
       const elapsed = state.total - newRemaining
       if (elapsed >= state._bufferTime) {
         audioEngine.play('ding')
-        // Enter buffer phase: pause the focus countdown, start 15-sec buffer
+        // Enter buffer phase: pause the focus countdown, start micro-break
         const settings = useSettingsStore.getState().settings
+        // Remember focus remaining/total so we can resume after the break
+        _focusResumeRemaining = newRemaining
+        _focusResumeTotal = state.total
         set({
           phase: 'buffer',
           remaining: settings.bufferSeconds,
           total: settings.bufferSeconds,
-          bufferTriggered: true,
-          // Remember focus remaining to resume later
         })
-        // Store the focus remaining in a module-level variable
-        _focusResumeRemaining = newRemaining
-        _focusResumeTotal = state.total
         return
       }
     }
 
-    // ── Buffer ended → resume focus ──
+    // ── Buffer ended → resume focus and schedule the next one ──
     if (state.phase === 'buffer' && newRemaining <= 0) {
       audioEngine.play('chime')
+      const settings = useSettingsStore.getState().settings
+      const nextBufferTime = computeNextBufferTime(
+        settings,
+        state._bufferTime,
+        state.currentFocusDuration,
+      )
       set({
         phase: 'focus',
         remaining: _focusResumeRemaining,
         total: _focusResumeTotal,
+        _bufferTime: nextBufferTime,
       })
       return
     }
@@ -258,7 +275,6 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
             remaining: focusDuration,
             total: focusDuration,
             currentFocusDuration: focusDuration,
-            bufferTriggered: false,
             _bufferTime: bufferTime,
             _intervalId: null,
           })

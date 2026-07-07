@@ -55,8 +55,6 @@ export interface TimerState {
   completedSessions: number
   /** The actual chosen focus duration (for random mode) */
   currentFocusDuration: number
-  /** Whether buffer has been triggered this focus session */
-  bufferTriggered: boolean
   /** Last used settings (for "same as last time" behaviour) */
   lastSettings: Settings | null
 }
