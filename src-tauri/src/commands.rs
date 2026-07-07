@@ -2,7 +2,7 @@
 // Tauri IPC Commands
 // ──────────────────────────────────────────────
 
-use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 /// Show the native floating window (always-on-top, small, borderless)
 #[tauri::command]
@@ -43,7 +43,26 @@ pub async fn hide_floating_window(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// Close (hide) the floating window — called from floating window JS
+#[tauri::command]
+pub async fn close_floating_window(app: AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("floating") {
+        window.hide().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// Start dragging the floating window — called from floating window JS
+#[tauri::command]
+pub async fn drag_floating_window(app: AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("floating") {
+        window.start_dragging().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 /// Update the floating window's timer display
+/// Uses window.eval() to directly inject JS — no event system needed
 #[tauri::command]
 pub async fn update_floating_timer(
     app: AppHandle,
@@ -52,13 +71,16 @@ pub async fn update_floating_timer(
     progress: f64,
 ) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("floating") {
-        window
-            .emit("timer-update", serde_json::json!({
-                "time": time,
-                "phase": phase,
-                "progress": progress,
-            }))
-            .map_err(|e| e.to_string())?;
+        let payload = serde_json::json!({
+            "time": time,
+            "phase": phase,
+            "progress": progress,
+        });
+        let js = format!(
+            "window.updateDisplay({})",
+            serde_json::to_string(&payload).map_err(|e| e.to_string())?
+        );
+        window.eval(&js).map_err(|e| e.to_string())?;
     }
     Ok(())
 }

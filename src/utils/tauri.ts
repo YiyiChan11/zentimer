@@ -1,51 +1,36 @@
 // ──────────────────────────────────────────────
 // Tauri API bridge — connects React frontend to Rust backend
 // Falls back gracefully when running in browser (no Tauri)
+//
+// Uses __TAURI_INTERNALS__ (always available in Tauri 2.0)
+// instead of __TAURI__ (requires withGlobalTauri: true)
 // ──────────────────────────────────────────────
 
-type TauriAPI = {
+type TauriInternals = {
   invoke: (cmd: string, args?: Record<string, unknown>) => Promise<unknown>
-  event: {
-    listen: (event: string, handler: (e: { payload: unknown }) => void) => Promise<() => void>
-  }
-  window: {
-    getCurrent: () => {
-      hide: () => Promise<void>
-      show: () => Promise<void>
-      setAlwaysOnTop: (v: boolean) => Promise<void>
-    }
-  }
 }
 
-function getTauriAPI(): TauriAPI | null {
-  if (typeof window !== 'undefined' && '__TAURI__' in window) {
-    return (window as unknown as { __TAURI__: TauriAPI }).__TAURI__
+function getTauriInternals(): TauriInternals | null {
+  if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
+    return (window as unknown as { __TAURI_INTERNALS__: TauriInternals }).__TAURI_INTERNALS__
   }
   return null
 }
 
-export const isTauri = (): boolean => getTauriAPI() !== null
+export const isTauri = (): boolean => getTauriInternals() !== null
 
 /** Show the native floating window */
 export async function showFloatingWindow(): Promise<void> {
-  const api = getTauriAPI()
-  if (!api) return
-  try {
-    await api.invoke('show_floating_window')
-  } catch (e) {
-    console.error('[Tauri] showFloatingWindow failed:', e)
-  }
+  const internals = getTauriInternals()
+  if (!internals) throw new Error('Tauri API not available')
+  await internals.invoke('show_floating_window')
 }
 
 /** Hide the native floating window */
 export async function hideFloatingWindow(): Promise<void> {
-  const api = getTauriAPI()
-  if (!api) return
-  try {
-    await api.invoke('hide_floating_window')
-  } catch (e) {
-    console.error('[Tauri] hideFloatingWindow failed:', e)
-  }
+  const internals = getTauriInternals()
+  if (!internals) throw new Error('Tauri API not available')
+  await internals.invoke('hide_floating_window')
 }
 
 /** Update floating window timer display */
@@ -54,11 +39,11 @@ export async function updateFloatingTimer(
   phase: string,
   progress: number,
 ): Promise<void> {
-  const api = getTauriAPI()
-  if (!api) return
+  const internals = getTauriInternals()
+  if (!internals) return
   try {
-    await api.invoke('update_floating_timer', { time, phase, progress })
-  } catch (e) {
+    await internals.invoke('update_floating_timer', { time, phase, progress })
+  } catch {
     // Silent fail — this is called every second
   }
 }

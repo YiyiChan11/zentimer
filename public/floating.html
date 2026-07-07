@@ -27,13 +27,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: background 0.3s ease;
+      cursor: grab;
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      position: relative;
     }
-    #container:hover {
-      background: rgba(28, 28, 34, 0.95);
-    }
+    #container:active { cursor: grabbing; }
+    #container:hover { background: rgba(28, 28, 34, 0.95); }
     #container.focus {
       border-color: rgba(245, 158, 11, 0.3);
       box-shadow: 0 8px 32px rgba(245, 158, 11, 0.15);
@@ -61,94 +61,133 @@
     #container.break #phase { color: #2dd4bf; }
     #progress-ring {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       pointer-events: none;
+    }
+    #close-btn {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 10px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+      z-index: 10;
+    }
+    #container:hover #close-btn { opacity: 1; }
+    #close-btn:hover {
+      background: rgba(255, 80, 80, 0.4);
+      color: rgba(255, 255, 255, 0.9);
     }
   </style>
 </head>
 <body>
   <div id="container">
     <svg id="progress-ring" viewBox="0 0 160 80">
-      <rect
-        x="2" y="2"
-        width="156" height="76"
-        rx="14"
-        fill="none"
-        stroke="rgba(255,255,255,0.06)"
-        stroke-width="2"
-      />
-      <rect
-        id="progress-bar"
-        x="2" y="2"
-        width="0" height="76"
-        rx="14"
-        fill="none"
-        stroke="rgba(245, 158, 11, 0.5)"
-        stroke-width="2"
-      />
+      <rect x="2" y="2" width="156" height="76" rx="14"
+        fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2" />
+      <rect id="progress-bar" x="2" y="2" width="0" height="76" rx="14"
+        fill="none" stroke="rgba(245, 158, 11, 0.5)" stroke-width="2" />
     </svg>
     <div id="time">25:00</div>
-    <div id="phase">Focus</div>
+    <div id="phase">Ready</div>
+    <button id="close-btn" title="Close">&times;</button>
   </div>
 
   <script>
-    const { listen } = window.__TAURI__.event;
+    // ── DOM refs ──
+    var container = document.getElementById('container');
+    var timeEl = document.getElementById('time');
+    var phaseEl = document.getElementById('phase');
+    var progressBar = document.getElementById('progress-bar');
+    var closeBtn = document.getElementById('close-btn');
 
-    const container = document.getElementById('container');
-    const timeEl = document.getElementById('time');
-    const phaseEl = document.getElementById('phase');
-    const progressBar = document.getElementById('progress-bar');
+    // ── IPC helper: uses __TAURI_INTERNALS__ (always available in Tauri 2.0) ──
+    function invoke(cmd, args) {
+      return window.__TAURI_INTERNALS__.invoke(cmd, args);
+    }
 
-    // Listen for timer updates from main window
-    listen('timer-update', (event) => {
-      const { time, phase, progress } = event.payload;
+    // ── Called by Rust backend via window.eval() to update timer display ──
+    window.updateDisplay = function(data) {
+      timeEl.textContent = data.time;
 
-      timeEl.textContent = time;
-
-      // Phase display
-      const phaseMap = {
+      var phaseMap = {
         focus: 'Focus',
         break: 'Break',
         buffer: 'Buffer',
         idle: 'Ready',
       };
-      phaseEl.textContent = phaseMap[phase] || phase;
+      phaseEl.textContent = phaseMap[data.phase] || data.phase;
 
-      // Update container style based on phase
+      // Phase styling
       container.className = '';
-      if (phase === 'focus') container.classList.add('focus');
-      else if (phase === 'break' || phase === 'buffer') container.classList.add('break');
+      if (data.phase === 'focus') container.classList.add('focus');
+      else if (data.phase === 'break' || data.phase === 'buffer') container.classList.add('break');
 
-      // Update progress bar (0-1 → 0-156)
-      const maxWidth = 156;
-      progressBar.setAttribute('width', String(maxWidth * progress));
+      // Progress bar (0-1 -> 0-156)
+      progressBar.setAttribute('width', String(156 * data.progress));
 
-      // Update progress bar color
-      if (phase === 'break' || phase === 'buffer') {
+      // Progress bar color
+      if (data.phase === 'break' || data.phase === 'buffer') {
         progressBar.setAttribute('stroke', 'rgba(45, 212, 191, 0.5)');
       } else {
         progressBar.setAttribute('stroke', 'rgba(245, 158, 11, 0.5)');
       }
+    };
+
+    // ── Drag: hold and move to drag the borderless window ──
+    var mouseDownPos = null;
+    var isDragging = false;
+
+    container.addEventListener('mousedown', function(e) {
+      if (e.target === closeBtn) return;
+      mouseDownPos = { x: e.screenX, y: e.screenY };
     });
 
-    // Double-click to bring main window to front
-    let clickCount = 0;
-    let clickTimer = null;
+    container.addEventListener('mousemove', function(e) {
+      if (!mouseDownPos || isDragging) return;
+      var dx = Math.abs(e.screenX - mouseDownPos.x);
+      var dy = Math.abs(e.screenY - mouseDownPos.y);
+      if (dx > 3 || dy > 3) {
+        isDragging = true;
+        invoke('drag_floating_window').catch(function(){});
+      }
+    });
 
-    container.addEventListener('click', () => {
+    container.addEventListener('mouseup', function() {
+      mouseDownPos = null;
+      setTimeout(function() { isDragging = false; }, 100);
+    });
+
+    // ── Close button ──
+    closeBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      invoke('close_floating_window').catch(function(){});
+    });
+
+    // ── Double-click anywhere to close ──
+    var clickCount = 0;
+    var clickTimer = null;
+
+    container.addEventListener('click', function(e) {
+      if (e.target === closeBtn) return;
+      if (isDragging) return;
       clickCount++;
       if (clickCount === 1) {
-        clickTimer = setTimeout(() => {
-          clickCount = 0;
-        }, 300);
+        clickTimer = setTimeout(function() { clickCount = 0; }, 300);
       } else if (clickCount === 2) {
         clearTimeout(clickTimer);
         clickCount = 0;
-        // Emit event to bring main window to front
-        window.__TAURI__.window.getCurrent().hide();
+        invoke('close_floating_window').catch(function(){});
       }
     });
   </script>

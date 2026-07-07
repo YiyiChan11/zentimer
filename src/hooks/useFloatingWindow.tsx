@@ -264,8 +264,7 @@ export function useFloatingWindow() {
         return
       } catch (e) {
         console.error('[FloatingWindow] Tauri native window failed:', e)
-        // Don't fall through to window.open — show helpful message
-        alert('悬浮窗打开失败，请检查应用权限设置')
+        alert(`悬浮窗打开失败：${e instanceof Error ? e.message : String(e)}\n请尝试重新打开应用。`)
         return
       }
     }

@@ -80,6 +80,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::show_floating_window,
             commands::hide_floating_window,
+            commands::close_floating_window,
+            commands::drag_floating_window,
             commands::update_floating_timer,
         ])
         .run(tauri::generate_context!())
