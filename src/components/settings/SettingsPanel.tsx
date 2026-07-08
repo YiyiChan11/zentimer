@@ -192,12 +192,13 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                 <div className="mt-4 space-y-3">
                   <button
                     onClick={() => (floatingWindow.isOpen ? floatingWindow.close() : floatingWindow.open())}
-                    className={`w-full py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    className={`w-full py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                       floatingWindow.isOpen
                         ? 'bg-focus-500 text-white shadow-lg shadow-focus-500/30'
                         : 'glass text-ink-300 hover:text-ink-100'
                     }`}
                   >
+                    <PictureInPicture2 size={16} />
                     {floatingWindow.isOpen ? t('floatingClose') : t('floatingOpen')}
                   </button>
                   <p className="text-xs text-ink-500">{t('floatingHint')}</p>
