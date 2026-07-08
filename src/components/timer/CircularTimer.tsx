@@ -1,9 +1,12 @@
 // ──────────────────────────────────────────────
 // CircularTimer — The centerpiece SVG progress ring (i18n ready)
+// Phase-responsive: idle = compact small ring,
+// focus/break/buffer = large expanded ring with smooth spring animation
 // ──────────────────────────────────────────────
 
 import { useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useAnimation } from 'framer-motion'
+import { useEffect } from 'react'
 import { formatTime, getProgress } from '@/utils/time'
 import { useT } from '@/i18n/useT'
 import type { TimerPhase } from '@/types'
@@ -21,6 +24,16 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference * (1 - progress)
   const { t, locale } = useT()
+  const controls = useAnimation()
+  const isIdle = phase === 'idle'
+
+  // Animate size on phase change: idle stays at 1x, active scales up to ~1.65x
+  useEffect(() => {
+    controls.start({
+      scale: isIdle ? 1 : 1.65,
+      transition: { type: 'spring', damping: 22, stiffness: 150, mass: 0.8 },
+    })
+  }, [phase, controls])
 
   const colors = useMemo(() => {
     switch (phase) {
@@ -38,13 +51,14 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
   const labels = PHASE_KEYS[phase]
 
   return (
-    <div
-      className="relative flex items-center justify-center w-[min(240px,62vw)] h-[min(240px,62vw)]"
+    <motion.div
+      animate={controls}
+      className="relative flex items-center justify-center w-[min(230px,56vw)] h-[min(230px,56vw)]"
     >
       {/* Outer glow */}
       <div
         className="absolute inset-0 rounded-full blur-3xl transition-all duration-1000"
-        style={{ background: colors.glow, scale: phase === 'idle' ? 0.8 : 1 }}
+        style={{ background: colors.glow, scale: isIdle ? 0.8 : 1 }}
       />
 
       <svg
@@ -110,47 +124,51 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
         )}
       </svg>
 
-      {/* Center content */}
+      {/* Center content — smaller & tighter when idle for breathing room */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.div
           key={phase}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="mb-3 flex flex-col items-center"
+          className={`flex flex-col items-center ${isIdle ? 'mb-1' : 'mb-3'}`}
         >
           <span
-            className="text-xs font-medium uppercase tracking-[0.3em]"
+            className={`font-medium uppercase tracking-[0.3em] ${isIdle ? 'text-[10px]' : 'text-xs'}`}
             style={{ color: colors.text }}
           >
             {t(labels.main)}
           </span>
-          <span className="text-[10px] text-ink-400 tracking-[0.2em] mt-0.5">
+          <span className={`text-ink-400 tracking-[0.2em] mt-0.5 ${isIdle ? 'text-[8px]' : 'text-[10px]'}`}>
             {t(labels.sub)}
           </span>
         </motion.div>
 
         <motion.div
           key={remaining}
-          className="text-[clamp(3rem,12vw,4.5rem)] font-light tabular text-ink-50 leading-none"
+          className={`font-light tabular text-ink-50 leading-none ${isIdle
+            ? 'text-[clamp(2rem,9vw,3rem)]'
+            : 'text-[clamp(2.8rem,11vw,4.2rem)]'
+          }`}
           style={{ fontFeatureSettings: '"tnum"', letterSpacing: '-0.02em' }}
         >
           {formatTime(remaining > 0 ? remaining : 0)}
         </motion.div>
 
-        <div className="mt-4 flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${isIdle ? 'mt-2' : 'mt-4'}`}>
           <div
-            className="h-1 w-1 rounded-full animate-pulse"
+            className={`rounded-full animate-pulse ${isIdle ? 'h-0.5 w-0.5' : 'h-1 w-1'}`}
             style={{ background: colors.ring }}
           />
-          <span className="text-xs text-ink-400">
+          <span className={`text-ink-400 ${isIdle ? 'text-[10px]' : 'text-xs'}`}>
             {phase === 'idle'
               ? (locale === 'zh' ? '选择时间开始专注' : 'Select time to start focus')
-              : `${Math.round(progress * 100)}% ${locale === 'zh' ? '已完成' : 'done'}`}
+              : `${Math.round(progress * 100)}% ${locale === 'zh' ? '已完成' : 'done'}`
+            }
           </span>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 

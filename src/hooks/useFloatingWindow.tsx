@@ -7,6 +7,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { listen } from '@tauri-apps/api/event'
 import { useTimerStore } from '@/store/timerStore'
+import { useFloatingStore } from '@/store/floatingStore'
 import { formatTime, getProgress } from '@/utils/time'
 import { isTauri, showFloatingWindow, hideFloatingWindow, updateFloatingTimer } from '@/utils/tauri'
 import type { TimerPhase } from '@/types'
@@ -203,7 +204,8 @@ document.body.onclick = () => {
 }
 
 export function useFloatingWindow() {
-  const [isOpen, setIsOpen] = useState(false)
+  const isOpen = useFloatingStore((s) => s.isOpen)
+  const setOpen = useFloatingStore((s) => s.setOpen)
   const pipWindowRef = useRef<Window | null>(null)
   const rootRef = useRef<Root | null>(null)
   const popupRef = useRef<Window | null>(null)
@@ -246,7 +248,7 @@ export function useFloatingWindow() {
     const checkClosed = setInterval(() => {
       if (popupRef.current?.closed) {
         popupRef.current = null
-        setIsOpen(false)
+        setOpen(false)
         if (bcRef.current) {
           bcRef.current.close()
           bcRef.current = null
@@ -266,7 +268,7 @@ export function useFloatingWindow() {
     if (!isTauri()) return
     let unlisten: (() => void) | undefined
     listen('floating-closed', () => {
-      setIsOpen(false)
+      setOpen(false)
     })
       .then((u) => {
         unlisten = u
@@ -282,7 +284,7 @@ export function useFloatingWindow() {
     if (isTauri()) {
       try {
         await showFloatingWindow()
-        setIsOpen(true)
+        setOpen(true)
         return
       } catch (e) {
         console.error('[FloatingWindow] Tauri native window failed:', e)
@@ -320,10 +322,10 @@ export function useFloatingWindow() {
             rootRef.current = null
           }
           pipWindowRef.current = null
-          setIsOpen(false)
+          setOpen(false)
         })
 
-        setIsOpen(true)
+        setOpen(true)
         return
       } catch {
         // PiP failed, fall through to popup
@@ -365,13 +367,13 @@ export function useFloatingWindow() {
       })
     }, 200)
 
-    setIsOpen(true)
+    setOpen(true)
   }, [phase, remaining, total])
 
   const close = useCallback(async () => {
     if (isTauri()) {
       await hideFloatingWindow()
-      setIsOpen(false)
+      setOpen(false)
       return
     }
     if (pipWindowRef.current) {
@@ -385,7 +387,7 @@ export function useFloatingWindow() {
       bcRef.current.close()
       bcRef.current = null
     }
-    setIsOpen(false)
+    setOpen(false)
   }, [])
 
   // Cleanup on unmount
