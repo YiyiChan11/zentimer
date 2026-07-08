@@ -40,6 +40,8 @@ pub async fn hide_floating_window(app: AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("floating") {
         window.hide().map_err(|e| e.to_string())?;
     }
+    // Notify the main window so its toggle button reflects the closed state
+    let _ = app.emit_to("main", "floating-closed", ());
     Ok(())
 }
 
@@ -49,6 +51,8 @@ pub async fn close_floating_window(app: AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("floating") {
         window.hide().map_err(|e| e.to_string())?;
     }
+    // Notify the main window so its toggle button reflects the closed state
+    let _ = app.emit_to("main", "floating-closed", ());
     Ok(())
 }
 

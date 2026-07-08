@@ -334,7 +334,7 @@ function NumberRow({
   }
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-2">
       <span className="text-sm text-ink-200">{label}</span>
       <div className="flex items-center gap-2">
         <button

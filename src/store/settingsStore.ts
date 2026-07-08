@@ -9,7 +9,7 @@ import type { Settings } from '@/types'
 import { audioEngine } from '@/utils/audio'
 
 const DEFAULT_SETTINGS: Settings = {
-  selectionMode: 'fixed',
+  selectionMode: 'random',
   fixedDuration: 25,
   randomMin: 20,
   randomMax: 45,
