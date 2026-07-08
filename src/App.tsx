@@ -114,8 +114,8 @@ function App() {
               <CircularTimer remaining={remaining} total={total} phase={phase} />
             </div>
 
-            {/* Controls or selector */}
-            <div className="mt-4 flex flex-col items-center gap-4 w-full max-w-md shrink-0">
+            {/* Controls or selector — more spacing in focus mode so buttons slide down */}
+            <div className={`flex flex-col items-center gap-4 w-full max-w-md shrink-0 ${phase === 'idle' ? 'mt-4' : 'mt-14'}`}>
               {phase === 'idle' ? (
                 <>
                   <TimeSelector />

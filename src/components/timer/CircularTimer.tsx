@@ -27,10 +27,13 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
   const controls = useAnimation()
   const isIdle = phase === 'idle'
 
-  // Animate size on phase change: idle stays at 1x, active scales up to ~1.65x
+  // Animate size + position on phase change:
+  //   idle = compact at original position
+  //   active = scale up ~1.65x + shift down so it sits comfortably below the session counter
   useEffect(() => {
     controls.start({
       scale: isIdle ? 1 : 1.65,
+      y: isIdle ? 0 : 28,
       transition: { type: 'spring', damping: 22, stiffness: 150, mass: 0.8 },
     })
   }, [phase, controls])
