@@ -22,9 +22,9 @@ export function FixedTimeSlider() {
   )
 
   return (
-    <div className="w-full space-y-5">
+    <div className="w-full space-y-4">
       {/* Glass card — matches Random's range display */}
-      <div className="glass rounded-2xl p-6">
+      <div className="glass rounded-2xl p-4">
         <div className="flex items-baseline justify-center gap-3">
           <span className="text-4xl font-light text-focus-300 tabular">
             {value}

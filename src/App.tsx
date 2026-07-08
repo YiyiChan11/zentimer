@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { getCurrentWindow } from '@tauri-apps/api/window'
 import { Header } from '@/components/layout/Header'
 import { CircularTimer } from '@/components/timer/CircularTimer'
 import { TimerControls } from '@/components/timer/TimerControls'
@@ -16,6 +15,7 @@ import { useFloatingWindow } from '@/hooks/useFloatingWindow'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useT } from '@/i18n/useT'
 import { isTauri } from '@/utils/tauri'
+import { listen } from '@tauri-apps/api/event'
 import { useUpdaterStore } from '@/store/updaterStore'
 
 // Phase labels for document title (simple, no i18n needed for title)
@@ -45,10 +45,9 @@ function App() {
   useEffect(() => {
     if (!isTauri()) return
     let unlisten: (() => void) | undefined
-    getCurrentWindow()
-      .listen('floating-toggle', () => {
-        useTimerStore.getState().toggle()
-      })
+    listen('floating-toggle', () => {
+      useTimerStore.getState().toggle()
+    })
       .then((u) => {
         unlisten = u
       })
@@ -103,10 +102,10 @@ function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="h-screen flex flex-col items-center justify-start px-6 pt-20 pb-8 overflow-y-auto"
+            className="h-screen flex flex-col items-center justify-start px-6 pt-14 pb-6 overflow-y-auto"
           >
             {/* Session counter */}
-            <div className="mb-4 shrink-0">
+            <div className="mb-2 shrink-0">
               <SessionStats completed={completedSessions} />
             </div>
 
@@ -116,7 +115,7 @@ function App() {
             </div>
 
             {/* Controls or selector */}
-            <div className="mt-6 flex flex-col items-center gap-6 w-full max-w-md shrink-0">
+            <div className="mt-4 flex flex-col items-center gap-4 w-full max-w-md shrink-0">
               {phase === 'idle' ? (
                 <>
                   <TimeSelector />
@@ -133,7 +132,7 @@ function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                className="mt-8 text-sm text-ink-500 italic font-serif shrink-0"
+                className="mt-5 text-sm text-ink-500 italic font-serif shrink-0"
               >
                 {t('quote')}
               </motion.p>

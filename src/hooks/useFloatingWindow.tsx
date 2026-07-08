@@ -5,7 +5,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { getCurrentWindow } from '@tauri-apps/api/window'
+import { listen } from '@tauri-apps/api/event'
 import { useTimerStore } from '@/store/timerStore'
 import { formatTime, getProgress } from '@/utils/time'
 import { isTauri, showFloatingWindow, hideFloatingWindow, updateFloatingTimer } from '@/utils/tauri'
@@ -258,15 +258,16 @@ export function useFloatingWindow() {
   }, [isOpen])
 
   // Sync with native floating window close (Tauri only) — when the floating
-  // window is closed from its own × button, Rust emits "floating-closed" so
-  // the main app's toggle button reflects the closed state.
+  // window is closed from its own × button, Rust emits a global
+  // "floating-closed" event so the main app's toggle button reflects the
+  // closed state. Using the global event channel (instead of window-scoped
+  // listen) avoids any dependency on the current-window handle resolving.
   useEffect(() => {
     if (!isTauri()) return
     let unlisten: (() => void) | undefined
-    getCurrentWindow()
-      .listen('floating-closed', () => {
-        setIsOpen(false)
-      })
+    listen('floating-closed', () => {
+      setIsOpen(false)
+    })
       .then((u) => {
         unlisten = u
       })

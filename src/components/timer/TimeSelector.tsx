@@ -44,7 +44,7 @@ export function TimeSelector() {
       </div>
 
       {/* Content area — fixed size prevents any layout shift */}
-      <div className="w-full" style={{ minHeight: 200 }}>
+      <div className="w-full" style={{ minHeight: 160 }}>
         <AnimatePresence mode="wait">
           {settings.selectionMode === 'fixed' ? (
             <motion.div
@@ -65,11 +65,11 @@ export function TimeSelector() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
-              className="w-full space-y-5"
+              className="w-full space-y-4"
               style={{ width: '100%' }}
             >
               {/* Range display */}
-              <div className="glass rounded-2xl p-6">
+              <div className="glass rounded-2xl p-4">
                 <div className="flex items-baseline justify-center gap-3">
                   <span className="text-4xl font-light text-focus-300 tabular">
                     {settings.randomMin}

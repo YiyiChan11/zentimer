@@ -39,7 +39,7 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
 
   return (
     <div
-      className="relative flex items-center justify-center w-[min(300px,75vw)] h-[min(300px,75vw)]"
+      className="relative flex items-center justify-center w-[min(240px,62vw)] h-[min(240px,62vw)]"
     >
       {/* Outer glow */}
       <div

@@ -41,7 +41,7 @@ pub async fn hide_floating_window(app: AppHandle) -> Result<(), String> {
         window.hide().map_err(|e| e.to_string())?;
     }
     // Notify the main window so its toggle button reflects the closed state
-    let _ = app.emit_to("main", "floating-closed", ());
+    let _ = app.emit("floating-closed", ());
     Ok(())
 }
 
@@ -52,7 +52,7 @@ pub async fn close_floating_window(app: AppHandle) -> Result<(), String> {
         window.hide().map_err(|e| e.to_string())?;
     }
     // Notify the main window so its toggle button reflects the closed state
-    let _ = app.emit_to("main", "floating-closed", ());
+    let _ = app.emit("floating-closed", ());
     Ok(())
 }
 
@@ -94,7 +94,7 @@ pub async fn update_floating_timer(
 /// window which performs the actual toggle.
 #[tauri::command]
 pub async fn floating_toggle_timer(app: AppHandle) -> Result<(), String> {
-    app.emit_to("main", "floating-toggle", ())
+    app.emit("floating-toggle", ())
         .map_err(|e| e.to_string())?;
     Ok(())
 }
