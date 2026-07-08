@@ -61,3 +61,6 @@ credentials.json
 tmp
 coverage
 *.tsbuildinfo
+
+# ── Gitee release mirror (pushed to its own repo, not GitHub) ──
+gitee-release/

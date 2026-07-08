@@ -1,65 +1,71 @@
 {
-  "$schema": "https://raw.githubusercontent.com/nickel-org/nickel.rs/master/schema.json",
-  "productName": "ZenTimer",
-  "version": "1.1.1",
-  "identifier": "com.zentimer.app",
-  "build": {
-    "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:5180",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
-  },
-  "app": {
-    "withGlobalTauri": true,
-    "windows": [
-      {
-        "label": "main",
-        "title": "ZenTimer",
-        "width": 900,
-        "height": 700,
-        "minWidth": 400,
-        "minHeight": 600,
-        "resizable": true,
-        "center": true,
-        "decorations": true,
-        "transparent": false,
-        "alwaysOnTop": false
-      }
-    ],
-    "security": {
-      "csp": null
-    },
-    "trayIcon": {
-      "iconPath": "icons/icon.png",
-      "iconAsTemplate": false,
-      "menuOnLeftClick": false,
-      "tooltip": "ZenTimer"
-    }
-  },
-  "bundle": {
-    "active": true,
-    "createUpdaterArtifacts": true,
-    "targets": ["nsis", "msi"],
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ],
-    "resources": [],
-    "externalBin": [],
-    "copyright": "© 2025 ZenTimer",
-    "category": "Productivity",
-    "shortDescription": "禅意番茄钟",
-    "longDescription": "ZenTimer — 一个禅意极简的番茄钟应用，帮助你专注、呼吸，然后继续。"
-  },
-  "plugins": {
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI1MURFOEQ4M0VFMURBQkQKUldTOTJ1RSsyT2dkdFdjeC9BUi9GbHI3bnF3RE9ockFESWUzR2hLUTkydzBCZE9IR00rOGFSY1oK",
-      "endpoints": [
-        "https://github.com/YiyiChan11/zentimer/releases/latest/download/latest.json"
-      ]
-    }
-  }
+    "productName":  "ZenTimer",
+    "version":  "1.1.2",
+    "identifier":  "com.zentimer.app",
+    "build":  {
+                  "beforeDevCommand":  "npm run dev",
+                  "devUrl":  "http://localhost:5180",
+                  "beforeBuildCommand":  "npm run build",
+                  "frontendDist":  "../dist"
+              },
+    "app":  {
+                "withGlobalTauri":  true,
+                "windows":  [
+                                {
+                                    "label":  "main",
+                                    "title":  "ZenTimer",
+                                    "width":  900,
+                                    "height":  700,
+                                    "minWidth":  400,
+                                    "minHeight":  600,
+                                    "resizable":  true,
+                                    "center":  true,
+                                    "decorations":  true,
+                                    "transparent":  false,
+                                    "alwaysOnTop":  false
+                                }
+                            ],
+                "security":  {
+                                 "csp":  null
+                             },
+                "trayIcon":  {
+                                 "iconPath":  "icons/icon.png",
+                                 "iconAsTemplate":  false,
+                                 "menuOnLeftClick":  false,
+                                 "tooltip":  "ZenTimer"
+                             }
+            },
+    "bundle":  {
+                   "active":  true,
+                   "createUpdaterArtifacts":  true,
+                   "targets":  [
+                                   "nsis",
+                                   "msi"
+                               ],
+                   "icon":  [
+                                "icons/32x32.png",
+                                "icons/128x128.png",
+                                "icons/128x128@2x.png",
+                                "icons/icon.icns",
+                                "icons/icon.ico"
+                            ],
+                   "resources":  [
+
+                                 ],
+                   "externalBin":  [
+
+                                   ],
+                   "copyright":  "© 2025 ZenTimer",
+                   "category":  "Productivity",
+                   "shortDescription":  "禅意番茄钟",
+                   "longDescription":  "ZenTimer 是一个禅意极简的番茄钟应用，帮助你专注、呼吸，然后继续。"
+               },
+    "plugins":  {
+                    "updater":  {
+                                    "pubkey":  "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVDMjQ0MjM4MjRDNUEwQTYKUldTbW9NVWtPRUlrWEI5WTArc2QvSjB3Lzl1ODhlT24vblhUdllRaDAyaC8rZElZUXArcE5rU24K",
+                                    "endpoints":  [
+                                                      "https://gitee.com/yiyichan/zentimer-update/raw/main/latest.json"
+                                                  ]
+                                }
+                }
 }
