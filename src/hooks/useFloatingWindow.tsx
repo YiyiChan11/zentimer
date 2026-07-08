@@ -3,7 +3,7 @@
 // Priority: Tauri native > Document PiP > window.open() popup
 // ──────────────────────────────────────────────
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { listen } from '@tauri-apps/api/event'
 import { useTimerStore } from '@/store/timerStore'
