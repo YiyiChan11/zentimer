@@ -26,7 +26,7 @@ pub async fn show_floating_window(app: AppHandle) -> Result<(), String> {
     .always_on_top(true)
     .skip_taskbar(true)
     .resizable(false)
-    .transparent(false)
+    .transparent(true)
     .center()
     .build()
     .map_err(|e| e.to_string())?;

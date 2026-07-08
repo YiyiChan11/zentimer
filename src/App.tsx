@@ -103,18 +103,20 @@ function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="min-h-screen flex flex-col items-center justify-center px-6 pt-20 pb-12"
+            className="h-screen flex flex-col items-center justify-start px-6 pt-20 pb-8 overflow-y-auto"
           >
             {/* Session counter */}
-            <div className="mb-8">
+            <div className="mb-4 shrink-0">
               <SessionStats completed={completedSessions} />
             </div>
 
             {/* Circular timer */}
-            <CircularTimer remaining={remaining} total={total} phase={phase} />
+            <div className="shrink-0">
+              <CircularTimer remaining={remaining} total={total} phase={phase} />
+            </div>
 
             {/* Controls or selector */}
-            <div className="mt-10 flex flex-col items-center gap-8 w-full max-w-md">
+            <div className="mt-6 flex flex-col items-center gap-6 w-full max-w-md shrink-0">
               {phase === 'idle' ? (
                 <>
                   <TimeSelector />
@@ -131,7 +133,7 @@ function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                className="mt-16 text-sm text-ink-500 italic font-serif"
+                className="mt-8 text-sm text-ink-500 italic font-serif shrink-0"
               >
                 {t('quote')}
               </motion.p>

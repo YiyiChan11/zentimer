@@ -18,7 +18,7 @@ export function TimeSelector() {
   return (
     <div className="w-full max-w-md">
       {/* Mode toggle */}
-      <div className="flex gap-2 p-1 rounded-2xl glass mb-6">
+      <div className="flex gap-2 p-1 rounded-2xl glass mb-3">
         <button
           onClick={() => setMode('fixed')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all ${
@@ -44,7 +44,7 @@ export function TimeSelector() {
       </div>
 
       {/* Content area — fixed size prevents any layout shift */}
-      <div className="w-full" style={{ minHeight: 280 }}>
+      <div className="w-full" style={{ minHeight: 200 }}>
         <AnimatePresence mode="wait">
           {settings.selectionMode === 'fixed' ? (
             <motion.div
