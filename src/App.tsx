@@ -40,6 +40,17 @@ function App() {
   const { t, locale } = useT()
   useKeyboardShortcuts()
 
+  // Track viewport width so the ring size can be a NUMERIC pixel value.
+  // Framer Motion cannot interpolate CSS `min()`/`calc()` strings, which was
+  // the cause of the "grow → stutter → pop" jump. Numbers spring smoothly.
+  const [vw, setVw] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 540))
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+  const ringSize = phase === 'idle' ? Math.min(230, vw * 0.56) : Math.min(420, vw * 0.82)
+
   // Listen for actions triggered from the native floating window
   // (single tap → pause/resume, or start focus when idle).
   // Double tap → open main is handled in Rust.
@@ -108,52 +119,50 @@ function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="h-screen flex flex-col items-center justify-start px-6 pt-14 pb-12 overflow-y-auto"
+            className="h-screen flex flex-col items-center px-6 pt-14 pb-12 overflow-hidden"
           >
             {/* Session counter */}
             <div className="mb-2 shrink-0">
               <SessionStats completed={completedSessions} />
             </div>
 
-            {/* Circular timer — SINGLE unified animation source for position + size.
+            {/* Circular timer — the ring lives in an ALWAYS-centered flex-1 zone.
+                Only its SIZE animates (numeric px → smooth spring). Its vertical
+                position is NOT animated separately; instead it emerges from the
+                flex layout: as the TimeSelector below collapses its height and the
+                ring grows, flex-1 re-centers the ring every frame, so it appears to
+                grow AND glide to center in ONE continuous, silky motion. No `layout`
+                prop, no competing springs, no un-interpolatable min() strings. */}
+            <div className="flex-1 min-h-0 w-full flex items-center justify-center">
+              <motion.div
+                animate={{ width: ringSize, height: ringSize }}
+                transition={phase === 'idle'
+                  // → shrink back to idle: snappy but not harsh
+                  ? { type: 'spring', damping: 26, stiffness: 240, mass: 0.7 }
+                  // → grow into focus: silky smooth, slightly slower for elegance
+                  : { type: 'spring', damping: 24, stiffness: 110, mass: 1 }}
+                className="relative flex items-center justify-center shrink-0"
+              >
+                <CircularTimer remaining={remaining} total={total} phase={phase} size={ringSize} />
+              </motion.div>
+            </div>
 
-                idle   → compact near top, small ring (~230px)
-                active → vertically centered, large ring (~420px)
-
-                Both the container's physical dimensions (via animate) and its
-                layout position (flex-1 vs static) are driven by ONE spring so
-                scaling and moving are perfectly synchronized — no jump/stutter. */}
-            <motion.div
-              layout
-              animate={{
-                width: phase === 'idle' ? 'min(230px, 56vw)' : 'min(420px, 82vw)',
-                height: phase === 'idle' ? 'min(230px, 56vw)' : 'min(420px, 82vw)',
-              }}
-              transition={phase === 'idle'
-                // → shrink back to idle: snappy but not harsh
-                ? { type: 'spring', damping: 26, stiffness: 260, mass: 0.7 }
-                // → grow into focus: silky smooth, slightly slower for elegance
-                : { type: 'spring', damping: 22, stiffness: 100, mass: 1.1 }}
-              className={`flex flex-col items-center justify-center ${phase !== 'idle' ? 'flex-1 min-h-0' : ''}`}
-            >
-              <CircularTimer remaining={remaining} total={total} phase={phase} />
-            </motion.div>
-
-            {/* Controls — always at the bottom (shrink-0). TimerControls stays mounted
+            {/* Controls — pinned at the bottom (shrink-0). TimerControls stays mounted
                 across phases so Framer Motion's layout animation can smoothly
                 slide Start Focus → Pause into place. */}
             <div className="flex flex-col items-center gap-4 w-full max-w-md shrink-0">
-              {/* Time selector — only in idle mode, with smooth enter/exit anim:
-                  enter = rise up from below; exit = clump + fade downward */}
-              <AnimatePresence>
+              {/* Time selector — idle only. Exit COLLAPSES height (auto → 0) so the
+                  layout above smoothly reclaims the space, driving the ring's glide
+                  to center. Enter reverses it. */}
+              <AnimatePresence initial={false}>
                 {phase === 'idle' && (
                   <motion.div
                     key="timeselector"
-                    initial={{ opacity: 0, y: 32 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 48, scale: 0.85 }}
-                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="w-full max-w-md"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ type: 'spring', damping: 26, stiffness: 200, mass: 0.8 }}
+                    className="w-full max-w-md overflow-hidden"
                   >
                     <TimeSelector />
                   </motion.div>

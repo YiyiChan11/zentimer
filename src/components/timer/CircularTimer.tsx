@@ -21,13 +21,19 @@ const PHASE_KEYS: Record<TimerPhase, { main: string; sub: string }> = {
   buffer: { main: 'phaseBuffer',  sub: 'phaseBufferEn' },
 }
 
-export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
+export function CircularTimer({ remaining, total, phase, size }: CircularTimerProps) {
   const progress = getProgress(remaining, total)
   const radius = 180
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference * (1 - progress)
   const { t, locale } = useT()
   const isIdle = phase === 'idle'
+
+  // Scale the big time number proportionally to the (animated) ring size so the
+  // digits grow smoothly *with* the ring instead of snapping to a fixed size.
+  // Falls back to a sensible default when size isn't provided (web/PiP).
+  const px = size ?? (isIdle ? 230 : 420)
+  const timeFontPx = Math.round(px * 0.2)
 
   // Size/position animation is handled by PARENT (App.tsx unified spring).
   // This component only manages colors and content per phase.
@@ -138,16 +144,16 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
           </span>
         </motion.div>
 
-        <motion.div
-          key={remaining}
-          className={`font-light tabular text-ink-50 leading-none ${isIdle
-            ? 'text-[clamp(2rem,9vw,3rem)]'
-            : 'text-[clamp(2.5rem,14vw,5rem)]'
-          }`}
-          style={{ fontFeatureSettings: '"tnum"', letterSpacing: '-0.02em' }}
+        <div
+          className="font-light tabular text-ink-50 leading-none"
+          style={{
+            fontSize: `${timeFontPx}px`,
+            fontFeatureSettings: '"tnum"',
+            letterSpacing: '-0.02em',
+          }}
         >
           {formatTime(remaining > 0 ? remaining : 0)}
-        </motion.div>
+        </div>
 
         <div className={`flex items-center gap-2 ${isIdle ? 'mt-2' : 'mt-3'}`}>
           <div
@@ -170,4 +176,6 @@ interface CircularTimerProps {
   remaining: number
   total: number
   phase: TimerPhase
+  /** Animated ring diameter in px (from parent). Used to scale the time font. */
+  size?: number
 }

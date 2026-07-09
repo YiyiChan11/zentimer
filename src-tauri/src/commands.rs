@@ -116,9 +116,18 @@ pub async fn set_floating_opacity(app: AppHandle, opacity: f64) -> Result<(), St
             if let Ok(hwnd) = window.hwnd() {
                 use windows::Win32::Foundation::COLORREF;
                 use windows::Win32::UI::WindowsAndMessaging::{
-                    SetLayeredWindowAttributes, LWA_ALPHA,
+                    GetWindowLongPtrW, SetLayeredWindowAttributes, SetWindowLongPtrW,
+                    GWL_EXSTYLE, LWA_ALPHA, WS_EX_LAYERED,
                 };
                 unsafe {
+                    // A Tauri `.transparent(true)` window does NOT reliably carry
+                    // WS_EX_LAYERED, which SetLayeredWindowAttributes REQUIRES.
+                    // Force the layered style on first, otherwise the alpha call
+                    // fails silently and the opacity never actually changes.
+                    let ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+                    if ex & (WS_EX_LAYERED.0 as isize) == 0 {
+                        SetWindowLongPtrW(hwnd, GWL_EXSTYLE, ex | WS_EX_LAYERED.0 as isize);
+                    }
                     // crkey = 0 (ignored by LWA_ALPHA), bAlpha = 0..255 global alpha
                     let _ = SetLayeredWindowAttributes(
                         hwnd,
