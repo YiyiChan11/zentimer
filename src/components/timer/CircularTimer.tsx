@@ -27,14 +27,18 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
   const controls = useAnimation()
   const isIdle = phase === 'idle'
 
-  // Animate size on phase change:
-  //   idle = compact at original size
-  //   active = scale up ~1.2x + subtle nudge down, with a soft silk spring
+  // Animate physical container size + slight nudge on phase change.
+  //   idle   = compact (~230px / 56vw)
+  //   active = large (~420px / 82vw) nearly filling width with side margins,
+  //            plus a tiny y-nudge so the center feels grounded.
+  // Spring config tuned for a "silky" feel — not too bouncy, not too stiff.
   useEffect(() => {
     controls.start({
-      scale: isIdle ? 1 : 1.2,
-      y: isIdle ? 0 : 4,
-      transition: { type: 'spring', damping: 20, stiffness: 110, mass: 1 },
+      width:  isIdle ? 'min(230px, 56vw)' : 'min(420px, 82vw)',
+      height: isIdle ? 'min(230px, 56vw)' : 'min(420px, 82vw)',
+      scale: 1,
+      y: isIdle ? 0 : 0,
+      transition: { type: 'spring', damping: 22, stiffness: 100, mass: 1.1 },
     })
   }, [phase, controls])
 
@@ -56,7 +60,8 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
   return (
     <motion.div
       animate={controls}
-      className="relative flex items-center justify-center w-[min(230px,56vw)] h-[min(230px,56vw)]"
+      className="relative flex items-center justify-center"
+      style={{ width: 'min(230px, 56vw)', height: 'min(230px, 56vw)' }}
     >
       {/* Outer glow */}
       <div
@@ -151,7 +156,7 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
           key={remaining}
           className={`font-light tabular text-ink-50 leading-none ${isIdle
             ? 'text-[clamp(2rem,9vw,3rem)]'
-            : 'text-[clamp(2.2rem,10vw,3.5rem)]'
+            : 'text-[clamp(2.5rem,14vw,5rem)]'
           }`}
           style={{ fontFeatureSettings: '"tnum"', letterSpacing: '-0.02em' }}
         >
