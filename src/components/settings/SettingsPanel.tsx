@@ -233,7 +233,7 @@ export function SettingsPanel({ open, onClose, onNavigateDownload }: SettingsPan
 
               {/* ── Update ── */}
               <section>
-                <SectionTitle icon={<RefreshCw size={15} />} title={t('update')} />
+                <SectionTitle icon={<RefreshCw size={15} />} title={updater.status === 'downloading' ? t('updating') : t('update')} />
                 <div className="mt-4 flex flex-col gap-3">
                   {/* Current version + Check button */}
                   <div className="flex items-center justify-between text-sm">
@@ -249,6 +249,11 @@ export function SettingsPanel({ open, onClose, onNavigateDownload }: SettingsPan
                       <>
                         <Loader2 size={16} className="animate-spin" />
                         {t('updateChecking')}
+                      </>
+                    ) : updater.status === 'downloading' ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        {t('updateDownloading')}
                       </>
                     ) : (
                       <>

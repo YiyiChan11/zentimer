@@ -12,8 +12,9 @@ export function UpdateNotification() {
   const { t } = useT()
   const { status, updateInfo, downloadProgress, errorMsg, downloadAndInstall, dismiss } = useUpdaterStore()
 
-  // Only show in Tauri (desktop) environment
-  if (status === 'idle' || status === 'checking' || status === 'not-available') return null
+  // Only show in Tauri (desktop) environment.
+  // Hide during download/installed — SettingsPanel shows its own inline progress.
+  if (status === 'idle' || status === 'checking' || status === 'not-available' || status === 'downloading' || status === 'installed') return null
 
   return (
     <AnimatePresence>

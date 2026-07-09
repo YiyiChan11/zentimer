@@ -115,6 +115,7 @@ export const en: Record<string, string> = {
   updateFailed: 'Update failed',
   checkUpdate: 'Check for updates',
   update: 'Update',
+  updating: 'Updating',
   currentVersion: 'Current version',
   updateChecking: 'Checking…',
   updateUpToDate: 'Up to date ✓',

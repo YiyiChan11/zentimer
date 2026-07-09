@@ -115,6 +115,7 @@ export const zh: Record<string, string> = {
   updateFailed: '更新失败',
   checkUpdate: '检查更新',
   update: '更新',
+  updating: '更新中',
   currentVersion: '当前版本',
   updateChecking: '检查中…',
   updateUpToDate: '已是最新版本 ✓',
