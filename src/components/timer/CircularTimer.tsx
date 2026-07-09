@@ -12,7 +12,7 @@ import { useMemo } from 'react'
 import { motion, type MotionValue } from 'framer-motion'
 import { formatTime, getProgress } from '@/utils/time'
 import { useT } from '@/i18n/useT'
-import type { TimerPhase } from '@/types'
+import type { TimerPhase, TimerStatus } from '@/types'
 
 const PHASE_KEYS: Record<TimerPhase, { main: string; sub: string }> = {
   idle:   { main: 'phaseReady',   sub: 'phaseReadyEn' },
@@ -21,30 +21,33 @@ const PHASE_KEYS: Record<TimerPhase, { main: string; sub: string }> = {
   buffer: { main: 'phaseBuffer',  sub: 'phaseBufferEn' },
 }
 
-export function CircularTimer({ remaining, total, phase, fontSizeMV }: CircularTimerProps) {
+export function CircularTimer({ remaining, total, phase, status = 'stopped', fontSizeMV }: CircularTimerProps) {
   const progress = getProgress(remaining, total)
   const radius = 180
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference * (1 - progress)
   const { t, locale } = useT()
   const isIdle = phase === 'idle'
+  const isPaused = status === 'paused'
 
   // Size/position animation is handled by the PARENT (App.tsx unified spring),
   // which passes an animated `fontSizeMV` so the digits grow WITH the ring.
   // This component only manages colors and content per phase.
 
   const colors = useMemo(() => {
+    // When paused, the inner glow dims to ~20% of normal brightness
+    const dimFactor = isPaused ? 0.2 : 1
     switch (phase) {
       case 'focus':
-        return { ring: '#f9a93c', glow: 'rgba(249, 169, 60, 0.45)', text: '#f9a93c' }
+        return { ring: '#f9a93c', glow: `rgba(249, 169, 60, ${0.45 * dimFactor})`, text: '#f9a93c' }
       case 'break':
-        return { ring: '#63a09d', glow: 'rgba(99, 160, 157, 0.45)', text: '#63a09d' }
+        return { ring: '#63a09d', glow: `rgba(99, 160, 157, ${0.45 * dimFactor})`, text: '#63a09d' }
       case 'buffer':
-        return { ring: '#fbc574', glow: 'rgba(251, 197, 116, 0.50)', text: '#fbc574' }
+        return { ring: '#fbc574', glow: `rgba(251, 197, 116, ${0.50 * dimFactor})`, text: '#fbc574' }
       default:
-        return { ring: '#827b70', glow: 'rgba(249, 169, 60, 0.18)', text: '#f7f6f4' }
+        return { ring: '#827b70', glow: `rgba(249, 169, 60, ${0.18 * dimFactor})`, text: '#f7f6f4' }
     }
-  }, [phase])
+  }, [phase, isPaused])
 
   const labels = PHASE_KEYS[phase]
 
@@ -52,7 +55,7 @@ export function CircularTimer({ remaining, total, phase, fontSizeMV }: CircularT
     <div className="relative flex items-center justify-center w-full h-full">
       {/* Outer glow — large diffuse bloom behind the ring */}
       <div
-        className="absolute inset-0 rounded-full transition-transform duration-700"
+        className="absolute inset-0 rounded-full transition-all duration-700"
         style={{
           background: colors.glow,
           filter: 'blur(72px)',
@@ -175,6 +178,8 @@ interface CircularTimerProps {
   remaining: number
   total: number
   phase: TimerPhase
+  /** Timer running status — used to dim glow when paused */
+  status?: TimerStatus
   /** Animated time-font size in px (from parent's unified spring). */
   fontSizeMV?: MotionValue<number>
 }

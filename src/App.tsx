@@ -35,7 +35,7 @@ type View = 'home' | 'download'
 function App() {
   const [view, setView] = useState<View>('home')
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const { phase, remaining, total, completedSessions } = useTimerStore()
+  const { phase, status, remaining, total, completedSessions } = useTimerStore()
   const floatingWindow = useFloatingWindow()
   const { t, locale } = useT()
   useKeyboardShortcuts()
@@ -195,7 +195,7 @@ function App() {
                   className="-translate-y-1/2"
                   style={{ width: ringSizeMV, height: ringSizeMV }}
                 >
-                  <CircularTimer remaining={remaining} total={total} phase={phase} fontSizeMV={fontMV} />
+                  <CircularTimer remaining={remaining} total={total} phase={phase} status={status} fontSizeMV={fontMV} />
                 </motion.div>
               </motion.div>
 
