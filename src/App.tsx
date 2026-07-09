@@ -114,8 +114,11 @@ function App() {
               <CircularTimer remaining={remaining} total={total} phase={phase} />
             </div>
 
-            {/* Controls or selector — more spacing in focus mode so buttons slide down */}
-            <div className={`flex flex-col items-center gap-4 w-full max-w-md shrink-0 ${phase === 'idle' ? 'mt-4' : 'mt-14'}`}>
+            {/* Spacer: pushes controls to bottom in focus/break/buffer mode */}
+            {phase !== 'idle' && <div className="flex-1 shrink-0 min-h-[40px]" />}
+
+            {/* Controls or selector — idle: compact below circle; active: pushed to bottom */}
+            <div className="flex flex-col items-center gap-4 w-full max-w-md shrink-0">
               {phase === 'idle' ? (
                 <>
                   <TimeSelector />
