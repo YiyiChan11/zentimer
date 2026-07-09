@@ -262,7 +262,7 @@ function App() {
       <BufferToast show={phase === 'buffer'} remaining={remaining} />
 
       {/* Settings panel */}
-      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} onNavigateDownload={() => setView('download')} />
 
       {/* Auto-update notification */}
       <UpdateNotification />

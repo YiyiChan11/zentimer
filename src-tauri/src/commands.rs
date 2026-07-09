@@ -99,17 +99,15 @@ pub async fn floating_toggle_timer(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// Set the floating window opacity (0.0–1.0). Lets the user make the
-/// always-on-top mini window more or less transparent from the settings.
-///
-/// NOTE: Tauri 2.11 does not expose `WebviewWindow::set_opacity`, so on
-/// Windows we call the Win32 `SetLayeredWindowAttributes` API directly via
-/// the native HWND. The floating window is created with `.transparent(true)`
-/// (WS_EX_LAYERED), which is exactly what this API requires.
+/// Set the floating window opacity (0.0–1.0 from slider).
+/// Remapped so that 0% → ~5% visible (user can still see the window shape)
+/// and 100% → fully opaque. Pure invisibility is confusing — you lose the
+/// window entirely and can't find it to drag or adjust.
 #[tauri::command]
 pub async fn set_floating_opacity(app: AppHandle, opacity: f64) -> Result<(), String> {
-    // Clamp to [0, 1]: 0 = fully transparent, 1 = fully opaque.
-    let clamped = opacity.clamp(0.0, 1.0);
+    // Map [0, 1] → [0.05, 1.0]: "0%" still shows a faint ghost,
+    // "100%" is completely solid.
+    let clamped = 0.05 + opacity.clamp(0.0, 1.0) * 0.95;
     #[cfg(windows)]
     {
         if let Some(window) = app.get_webview_window("floating") {

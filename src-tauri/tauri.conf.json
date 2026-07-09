@@ -15,7 +15,7 @@
                                     "label":  "main",
                                     "title":  "ZenTimer",
                                     "width":  540,
-                                    "height":  780,
+                                    "height":  832,
                                     "minWidth":  360,
                                     "minHeight":  560,
                                     "resizable":  true,

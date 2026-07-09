@@ -16,6 +16,13 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, cwd| {
+            // When a second instance is launched, bring the existing window to front
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .setup(|app| {
             // ── Build tray menu ──
             let show_item = MenuItem::with_id(app, "show", "显示窗口", true, None::<&str>)?;

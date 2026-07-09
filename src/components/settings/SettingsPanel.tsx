@@ -17,9 +17,11 @@ import type { Locale } from '@/types'
 interface SettingsPanelProps {
   open: boolean
   onClose: () => void
+  /** Navigate to the download page (called from the download section inside settings) */
+  onNavigateDownload?: () => void
 }
 
-export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
+export function SettingsPanel({ open, onClose, onNavigateDownload }: SettingsPanelProps) {
   const { settings, update, reset } = useSettingsStore()
   const { t, locale, setLocale } = useT()
   const floatingWindow = useFloatingWindow()
@@ -383,6 +385,30 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                     )}
                   </AnimatePresence>
                 </div>
+              </section>
+
+              {/* ── Download ── */}
+              <section>
+                <button
+                  onClick={() => {
+                    onNavigateDownload?.()
+                    onClose()
+                  }}
+                  className="w-full group rounded-2xl border border-white/5 bg-white/[0.03] p-4 flex items-center gap-3 transition-all hover:border-focus-500/20 hover:bg-focus-500/5"
+                >
+                  <div className="text-ink-400 group-hover:text-focus-400 transition-colors">
+                    <Download size={18} />
+                  </div>
+                  <div className="text-left flex-1 min-w-0">
+                    <p className="text-sm font-medium text-ink-200 group-hover:text-focus-300 transition-colors">
+                      {t('download')}
+                    </p>
+                    <p className="text-xs text-ink-500 mt-0.5">
+                      {locale === 'zh' ? '网页端 · Windows · Android' : 'Web · Windows · Android'}
+                    </p>
+                  </div>
+                  <span className="text-ink-600 group-hover:text-focus-500/50 transition-colors text-lg">→</span>
+                </button>
               </section>
 
               {/* ── Reset ── */}
