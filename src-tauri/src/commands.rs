@@ -108,8 +108,8 @@ pub async fn floating_toggle_timer(app: AppHandle) -> Result<(), String> {
 /// (WS_EX_LAYERED), which is exactly what this API requires.
 #[tauri::command]
 pub async fn set_floating_opacity(app: AppHandle, opacity: f64) -> Result<(), String> {
-    // Clamp to a safe range so the window never becomes fully invisible
-    let clamped = opacity.clamp(0.3, 1.0);
+    // Clamp to [0, 1]: 0 = fully transparent, 1 = fully opaque.
+    let clamped = opacity.clamp(0.0, 1.0);
     #[cfg(windows)]
     {
         if let Some(window) = app.get_webview_window("floating") {

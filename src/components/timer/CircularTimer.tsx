@@ -36,13 +36,13 @@ export function CircularTimer({ remaining, total, phase, fontSizeMV }: CircularT
   const colors = useMemo(() => {
     switch (phase) {
       case 'focus':
-        return { ring: '#f9a93c', glow: 'rgba(249, 169, 60, 0.25)', text: '#f9a93c' }
+        return { ring: '#f9a93c', glow: 'rgba(249, 169, 60, 0.38)', text: '#f9a93c' }
       case 'break':
-        return { ring: '#63a19d', glow: 'rgba(99, 161, 157, 0.25)', text: '#63a19d' }
+        return { ring: '#63a19d', glow: 'rgba(99, 161, 157, 0.38)', text: '#63a19d' }
       case 'buffer':
-        return { ring: '#fbc574', glow: 'rgba(251, 197, 116, 0.3)', text: '#fbc574' }
+        return { ring: '#fbc574', glow: 'rgba(251, 197, 116, 0.42)', text: '#fbc574' }
       default:
-        return { ring: '#827b70', glow: 'rgba(130, 123, 112, 0.15)', text: '#f7f6f4' }
+        return { ring: '#827b70', glow: 'rgba(249, 169, 60, 0.16)', text: '#f7f6f4' }
     }
   }, [phase])
 
@@ -104,7 +104,7 @@ export function CircularTimer({ remaining, total, phase, fontSizeMV }: CircularT
           strokeDasharray={circumference}
           animate={{ strokeDashoffset }}
           transition={{ duration: 0.8, ease: 'linear' }}
-          style={{ filter: `drop-shadow(0 0 12px ${colors.glow})` }}
+          style={{ filter: `drop-shadow(0 0 16px ${colors.glow})` }}
         />
 
         {/* Progress dot at the end of the ring */}

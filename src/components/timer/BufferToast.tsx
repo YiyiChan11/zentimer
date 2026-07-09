@@ -36,7 +36,7 @@ export function BufferToast({ show, remaining }: BufferToastProps) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40"
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none"
         >
           <div className="glass-strong rounded-2xl px-6 py-4 flex items-center gap-4 shadow-2xl">
             <div className="w-10 h-10 rounded-xl bg-focus-500/15 flex items-center justify-center text-focus-300">

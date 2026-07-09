@@ -188,7 +188,7 @@ function App() {
                   animate as a single continuous, silky motion. No competing
                   springs, no layout-derived position, no end-of-transition jump. */}
               <motion.div
-                className="absolute left-1/2 top-1/2"
+                className="absolute left-1/2 top-1/2 pointer-events-none"
                 style={{ x: '-50%', y: ringY }}
               >
                 <motion.div
