@@ -93,7 +93,7 @@ function App() {
   // Vertical placement: the ring is anchored at the stage's vertical center
   // (top-1/2) and shifted UP while idle, gliding to center on focus. Driven by
   // the SAME spring → size growth and downward glide happen as one motion.
-  const shiftUp = Math.max(80, stageH * 0.2)
+  const shiftUp = Math.max(110, stageH * 0.28)
   const shiftUpRef = useRef(shiftUp)
   shiftUpRef.current = shiftUp
   const ringY = useTransform(progress, (p: number) => -(shiftUpRef.current) * (1 - p))
