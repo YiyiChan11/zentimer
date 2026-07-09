@@ -109,20 +109,20 @@ function App() {
               <SessionStats completed={completedSessions} />
             </div>
 
-            {/* Circular timer */}
-            <div className="shrink-0">
+            {/* Circular timer — in active mode, flex-1 centers it in the space
+                above the controls; idle keeps it compact near the top */}
+            <div className={`w-full flex flex-col items-center min-h-0 ${phase !== 'idle' ? 'flex-1 justify-center' : ''}`}>
               <CircularTimer remaining={remaining} total={total} phase={phase} />
             </div>
 
-            {/* Small gap between timer and controls in active mode */}
-            {phase !== 'idle' && <div className="h-3 shrink-0" />}
-
-            {/* Controls area — TimerControls always renders so layout animation works across phases */}
+            {/* Controls — always at the bottom (shrink-0). TimerControls stays mounted
+                across phases so Framer Motion's layout animation can smoothly
+                slide Start Focus → Pause into place. */}
             <div className="flex flex-col items-center gap-4 w-full max-w-md shrink-0">
               {/* Time selector only in idle mode */}
               {phase === 'idle' && <TimeSelector />}
 
-              {/* Main controls: Start Focus / Pause / Reset / Skip — animates smoothly via layout */}
+              {/* Main controls: Start Focus / Pause / Reset / Skip */}
               <TimerControls />
             </div>
 
