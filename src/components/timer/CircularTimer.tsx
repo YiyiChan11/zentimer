@@ -29,11 +29,11 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
 
   // Animate size on phase change:
   //   idle = compact at original position
-  //   active = scale up ~1.6x + tiny nudge down (layout spacer handles major separation)
+  //   active = gentle scale-up (~1.2x) + subtle nudge — stays compact with controls below
   useEffect(() => {
     controls.start({
-      scale: isIdle ? 1 : 1.6,
-      y: isIdle ? 0 : 12,
+      scale: isIdle ? 1 : 1.18,
+      y: isIdle ? 0 : 4,
       transition: { type: 'spring', damping: 22, stiffness: 150, mass: 0.8 },
     })
   }, [phase, controls])
@@ -134,15 +134,15 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className={`flex flex-col items-center ${isIdle ? 'mb-1' : 'mb-3'}`}
+          className={`flex flex-col items-center ${isIdle ? 'mb-1' : 'mb-2'}`}
         >
           <span
-            className={`font-medium uppercase tracking-[0.3em] ${isIdle ? 'text-[10px]' : 'text-xs'}`}
+            className={`font-medium uppercase tracking-[0.3em] ${isIdle ? 'text-[10px]' : 'text-[10px]'}`}
             style={{ color: colors.text }}
           >
             {t(labels.main)}
           </span>
-          <span className={`text-ink-400 tracking-[0.2em] mt-0.5 ${isIdle ? 'text-[8px]' : 'text-[10px]'}`}>
+          <span className={`text-ink-400 tracking-[0.2em] mt-0.5 ${isIdle ? 'text-[8px]' : 'text-[9px]'}`}>
             {t(labels.sub)}
           </span>
         </motion.div>
@@ -151,19 +151,19 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
           key={remaining}
           className={`font-light tabular text-ink-50 leading-none ${isIdle
             ? 'text-[clamp(2rem,9vw,3rem)]'
-            : 'text-[clamp(2.8rem,11vw,4.2rem)]'
+            : 'text-[clamp(2.2rem,10vw,3.5rem)]'
           }`}
           style={{ fontFeatureSettings: '"tnum"', letterSpacing: '-0.02em' }}
         >
           {formatTime(remaining > 0 ? remaining : 0)}
         </motion.div>
 
-        <div className={`flex items-center gap-2 ${isIdle ? 'mt-2' : 'mt-4'}`}>
+        <div className={`flex items-center gap-2 ${isIdle ? 'mt-2' : 'mt-3'}`}>
           <div
             className={`rounded-full animate-pulse ${isIdle ? 'h-0.5 w-0.5' : 'h-1 w-1'}`}
             style={{ background: colors.ring }}
           />
-          <span className={`text-ink-400 ${isIdle ? 'text-[10px]' : 'text-xs'}`}>
+          <span className={`text-ink-400 ${isIdle ? 'text-[10px]' : 'text-[10px]'}`}>
             {phase === 'idle'
               ? (locale === 'zh' ? '选择时间开始专注' : 'Select time to start focus')
               : `${Math.round(progress * 100)}% ${locale === 'zh' ? '已完成' : 'done'}`

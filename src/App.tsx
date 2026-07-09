@@ -114,19 +114,16 @@ function App() {
               <CircularTimer remaining={remaining} total={total} phase={phase} />
             </div>
 
-            {/* Spacer: pushes controls to bottom in focus/break/buffer mode */}
-            {phase !== 'idle' && <div className="flex-1 shrink-0 min-h-[40px]" />}
+            {/* Small gap between timer and controls in active mode */}
+            {phase !== 'idle' && <div className="h-3 shrink-0" />}
 
-            {/* Controls or selector — idle: compact below circle; active: pushed to bottom */}
+            {/* Controls area — TimerControls always renders so layout animation works across phases */}
             <div className="flex flex-col items-center gap-4 w-full max-w-md shrink-0">
-              {phase === 'idle' ? (
-                <>
-                  <TimeSelector />
-                  <TimerControls />
-                </>
-              ) : (
-                <TimerControls />
-              )}
+              {/* Time selector only in idle mode */}
+              {phase === 'idle' && <TimeSelector />}
+
+              {/* Main controls: Start Focus / Pause / Reset / Skip — animates smoothly via layout */}
+              <TimerControls />
             </div>
 
             {/* Quote */}
