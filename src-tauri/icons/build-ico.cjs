@@ -19,7 +19,7 @@ const SIZES = [16, 24, 32, 48, 64, 128, 256]
 async function ensureSize(size) {
   const out = path.join(ICONS_DIR, `${size}x${size}.png`)
   if (fs.existsSync(out)) return out
-  await sharp(MASTER).resize(size, size, { fit: 'contain', background: { r:0,g:0,b:0,alpha:0 } }).png().toFile(out)
+  await sharp(MASTER).resize(size, size, { fit: 'contain', background: { r:0,g:0,b:0,alpha:0 } }).ensureAlpha().png().toFile(out)
   console.log(`  Generated ${size}x${size}`)
   return out
 }

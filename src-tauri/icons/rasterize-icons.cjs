@@ -20,6 +20,7 @@ async function render(size, outputName) {
   const outPath = join(ICONS_DIR, outputName)
   await sharp(svgBuffer)
     .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .ensureAlpha()                                   // force true RGBA (4 channels) — Tauri requires it
     .png({ quality: 100, compressionLevel: 9 })
     .toFile(outPath)
   console.log(`  OK ${outputName} (${size}x${size})`)
