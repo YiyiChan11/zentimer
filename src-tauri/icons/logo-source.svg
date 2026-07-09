@@ -1,0 +1,60 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Dark rounded-square background -->
+    <radialGradient id="bg" cx="50%" cy="45%" r="75%">
+      <stop offset="0%" stop-color="#262119"/>
+      <stop offset="100%" stop-color="#14120f"/>
+    </radialGradient>
+
+    <!-- Enso ring: amber → warm amber → teal gradient -->
+    <linearGradient id="ring" x1="8%" y1="12%" x2="92%" y2="88%">
+      <stop offset="0%"   stop-color="#f9a93c"/>
+      <stop offset="35%"  stop-color="#e88d1a"/>
+      <stop offset="70%"  stop-color="#1abc9c"/>
+      <stop offset="100%" stop-color="#2dd4bf"/>
+    </linearGradient>
+
+    <!-- Soft glow for the enso ring -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blurA"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blurB"/>
+      <feMerge>
+        <feMergeNode in="blurB"/>
+        <feMergeNode in="blurA"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Subtle inner highlight on background -->
+    <linearGradient id="innerHighlight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded-rect base -->
+  <rect x="16" y="16" width="480" height="480" rx="108"
+        fill="url(#bg)"/>
+
+  <!-- Inner border highlight -->
+  <rect x="17" y="17" width="478" height="478" rx="107"
+        fill="none" stroke="url(#innerHighlight)" stroke-width="1.5"/>
+
+  <!-- ═══ Enso (Zen Circle) ═══
+       A brush-style open ring — the gap sits near 10–11 o'clock,
+       representing wabi-sabi (imperfection as beauty).
+       dasharray = arc-length + gap; rotate positions the gap.
+       Circumference ≈ 2π·168 ≈ 1056 → use ~960 + gap~96 -->
+  <circle cx="256" cy="256" r="168"
+          fill="none"
+          stroke="url(#ring)"
+          stroke-width="28"
+          stroke-linecap="round"
+          stroke-dasharray="956 100"
+          transform="rotate(-78 256 256)"
+          filter="url(#glow)"
+          opacity="0.94"/>
+
+  <!-- Center dot – "the present moment" -->
+  <circle cx="256" cy="256" r="15" fill="#f9a93c" opacity="0.92"/>
+</svg>

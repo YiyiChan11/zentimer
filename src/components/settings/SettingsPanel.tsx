@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Volume2, Coffee, Zap, RotateCcw, Globe, PictureInPicture2, RefreshCw } from 'lucide-react'
+import { X, Volume2, Coffee, Zap, RotateCcw, Globe, PictureInPicture2, RefreshCw, Sparkles, Download, Loader2, Check, AlertCircle } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
 import { audioEngine } from '@/utils/audio'
 import { Toggle } from './Toggle'
@@ -209,6 +209,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
               <section>
                 <SectionTitle icon={<RefreshCw size={15} />} title={t('update')} />
                 <div className="mt-4 space-y-3">
+                  {/* Current version + Check button */}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-ink-300">{t('currentVersion')}</span>
                     <span className="text-ink-400 text-xs tabular">v{updater.currentVersion || '—'}</span>
@@ -216,24 +217,147 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                   <button
                     onClick={() => updater.checkForUpdates()}
                     disabled={updater.status === 'checking' || updater.status === 'downloading'}
-                    className="w-full py-2.5 rounded-xl text-sm font-medium transition-all glass text-ink-300 hover:text-ink-100 disabled:opacity-50"
+                    className="w-full py-2.5 rounded-xl text-sm font-medium transition-all glass text-ink-300 hover:text-ink-100 hover:bg-white/5 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {updater.status === 'checking' ? t('updateChecking') : t('checkUpdate')}
+                    {updater.status === 'checking' ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        {t('updateChecking')}
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw size={16} />
+                        {t('checkUpdate')}
+                      </>
+                    )}
                   </button>
-                  {updater.status === 'available' && (
-                    <button
-                      onClick={() => updater.downloadAndInstall()}
-                      className="w-full py-2.5 rounded-xl text-sm font-medium bg-focus-500 text-white shadow-lg shadow-focus-500/30 transition-all"
-                    >
-                      {t('updateNow')} v{updater.updateInfo?.version}
-                    </button>
-                  )}
-                  {updater.status === 'not-available' && (
-                    <p className="text-xs text-ink-500">{t('updateUpToDate')}</p>
-                  )}
-                  {updater.status === 'error' && (
-                    <p className="text-xs text-red-400 break-all">{updater.errorMsg}</p>
-                  )}
+
+                  {/* ═══ Full update status card (below check button) ═══ */}
+                  <AnimatePresence mode="wait">
+                    {updater.status === 'available' && updater.updateInfo && (
+                      <motion.div
+                        key="available"
+                        initial={{ opacity: 0, height: 0, y: -8 }}
+                        animate={{ opacity: 1, height: 'auto', y: 0 }}
+                        exit={{ opacity: 0, height: 0, y: -8 }}
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="rounded-2xl border border-focus-500/20 bg-focus-500/5 p-4 space-y-3">
+                          {/* Header row */}
+                          <div className="flex items-start gap-3">
+                            <div className="mt-0.5 text-focus-400 shrink-0">
+                              <Sparkles size={18} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-ink-50">
+                                {t('updateAvailable')} v{updater.updateInfo.version}
+                              </p>
+                              <p className="text-xs text-ink-400 mt-0.5">
+                                {t('updateAvailableDesc')}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Changelog body */}
+                          {updater.updateInfo.body && (
+                            <div className="bg-black/20 rounded-xl p-3">
+                              <p className="text-[11px] font-medium text-focus-400/80 uppercase tracking-wider mb-1.5">
+                                {t('updateChangelog')}
+                              </p>
+                              <pre className="text-xs text-ink-300 whitespace-pre-wrap font-sans leading-relaxed max-h-32 overflow-y-auto no-scrollbar">
+                                {updater.updateInfo.body}
+                              </pre>
+                            </div>
+                          )}
+
+                          {/* Update button */}
+                          <button
+                            onClick={() => updater.downloadAndInstall()}
+                            className="w-full py-2.5 rounded-xl text-sm font-semibold bg-focus-500 hover:bg-focus-400 text-white shadow-lg shadow-focus-500/25 transition-all flex items-center justify-center gap-2"
+                          >
+                            <Download size={16} />
+                            {t('updateNow')} v{updater.updateInfo.version}
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {updater.status === 'downloading' && (
+                      <motion.div
+                        key="downloading"
+                        initial={{ opacity: 0, height: 0, y: -8 }}
+                        animate={{ opacity: 1, height: 'auto', y: 0 }}
+                        exit={{ opacity: 0, height: 0, y: -8 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 space-y-3">
+                          <div className="flex items-center gap-3">
+                            <Loader2 size={18} className="animate-spin text-focus-400" />
+                            <span className="text-sm text-ink-200 flex-1">{t('updateDownloading')}</span>
+                            <span className="text-sm text-ink-400 tabular-nums font-medium">{updater.downloadProgress}%</span>
+                          </div>
+                          <div className="h-2 bg-ink-100/10 rounded-full overflow-hidden">
+                            <motion.div
+                              className="h-full rounded-full bg-gradient-to-r from-focus-600 to-focus-400"
+                              animate={{ width: `${updater.downloadProgress}%` }}
+                              transition={{ duration: 0.35, ease: 'easeOut' }}
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {updater.status === 'installed' && (
+                      <motion.div
+                        key="installed"
+                        initial={{ opacity: 0, height: 0, y: -8 }}
+                        animate={{ opacity: 1, height: 'auto', y: 0 }}
+                        exit={{ opacity: 0, height: 0, y: -8 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="rounded-2xl border border-green-500/15 bg-green-500/5 p-4 flex flex-col items-center gap-2 text-center">
+                          <Check size={24} className="text-green-400" />
+                          <span className="text-sm text-ink-200 font-medium">{t('updateRestarting')}</span>
+                          <span className="text-xs text-ink-500">{t('updateRestartHint')}</span>
+                          <Loader2 size={14} className="animate-spin text-green-400/60 mt-1" />
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {updater.status === 'not-available' && (
+                      <motion.p
+                        key="uptodate"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-xs text-emerald-400/70 text-center py-1.5"
+                      >
+                        {t('updateUpToDate')}
+                      </motion.p>
+                    )}
+
+                    {updater.status === 'error' && (
+                      <motion.div
+                        key="error"
+                        initial={{ opacity: 0, height: 0, y: -8 }}
+                        animate={{ opacity: 1, height: 'auto', y: 0 }}
+                        exit={{ opacity: 0, height: 0, y: -8 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="rounded-2xl border border-red-500/15 bg-red-500/5 p-4 space-y-2">
+                          <div className="flex items-start gap-2">
+                            <AlertCircle size={16} className="text-red-400 mt-0.5 shrink-0" />
+                            <span className="text-sm text-red-300">{t('updateFailed')}</span>
+                          </div>
+                          <p className="text-xs text-red-400/60 break-all leading-relaxed">{updater.errorMsg}</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </section>
 

@@ -24,25 +24,26 @@ export function Header({ onOpenSettings, onNavigateDownload, onNavigateHome, cur
           onClick={onNavigateHome}
           className="flex items-center gap-2.5 group"
         >
-          {/* Logo mark */}
+          {/* Logo mark — Zen Enso */}
           <div className="relative w-8 h-8">
             <svg viewBox="0 0 32 32" className="w-8 h-8">
-              <circle
-                cx="16" cy="16" r="13"
-                fill="none"
-                stroke="url(#logoGrad)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeDasharray="65 20"
-                transform="rotate(-90 16 16)"
-              />
-              <circle cx="16" cy="16" r="3" fill="#f9a93c" />
               <defs>
-                <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#f9a93c" />
-                  <stop offset="100%" stopColor="#e3700b" />
+                <linearGradient id="logoGrad" x1="10%" y1="12%" x2="90%" y2="88%">
+                  <stop offset="0%" stopColor="#f9a93c"/>
+                  <stop offset="55%" stopColor="#e88d1a"/>
+                  <stop offset="100%" stopColor="#2dd4bf"/>
                 </linearGradient>
               </defs>
+              {/* Dark bg circle */}
+              <circle cx="16" cy="16" r="14.5" fill="#1a1613"/>
+              {/* Enso ring */}
+              <circle cx="16" cy="16" r="10"
+                fill="none" stroke="url(#logoGrad)"
+                strokeWidth="2.4" strokeLinecap="round"
+                strokeDasharray="57 6"
+                transform="rotate(-78 16 16)"/>
+              {/* Center dot */}
+              <circle cx="16" cy="16" r="1.6" fill="#f9a93c" opacity="0.92"/>
             </svg>
           </div>
           <div className="flex flex-col items-start leading-none">

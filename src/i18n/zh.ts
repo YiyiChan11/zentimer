@@ -102,17 +102,20 @@ export const zh: Record<string, string> = {
   floatingHint: '在屏幕角落显示迷你计时器',
   keyboardHint: '空格 开始/暂停 · Esc 重置',
   quote: '「静而后能安，安而后能虑，虑而后能得。」',
-  version: 'v1.0 · 禅意番茄钟',
+  version: 'v1.1.8 · 禅意番茄钟',
 
   // Auto-update
   updateAvailable: '发现新版本',
+  updateAvailableDesc: '新版本已发布，包含以下更新：',
   updateNow: '立即更新',
   updateDownloading: '正在下载更新…',
   updateRestarting: '更新完成，正在重启…',
+  updateRestartHint: '安装完成后将自动重启应用',
   updateFailed: '更新失败',
   checkUpdate: '检查更新',
   update: '更新',
   currentVersion: '当前版本',
   updateChecking: '检查中…',
-  updateUpToDate: '已是最新版本',
+  updateUpToDate: '已是最新版本 ✓',
+  updateChangelog: '更新内容',
 }

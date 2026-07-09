@@ -102,17 +102,20 @@ export const en: Record<string, string> = {
   floatingHint: 'Show mini timer in screen corner',
   keyboardHint: 'Space to start/pause · Esc to reset',
   quote: '"Stillness leads to peace, peace leads to clarity, clarity leads to result."',
-  version: 'v1.0 · ZenTimer',
+  version: 'v1.1.8 · ZenTimer',
 
   // Auto-update
   updateAvailable: 'Update available',
+  updateAvailableDesc: 'A new version is ready with these changes:',
   updateNow: 'Update now',
   updateDownloading: 'Downloading update…',
   updateRestarting: 'Update complete, restarting…',
+  updateRestartHint: 'App will restart automatically when finished',
   updateFailed: 'Update failed',
   checkUpdate: 'Check for updates',
   update: 'Update',
   currentVersion: 'Current version',
   updateChecking: 'Checking…',
-  updateUpToDate: 'Up to date',
+  updateUpToDate: 'Up to date ✓',
+  updateChangelog: "What's New",
 }
