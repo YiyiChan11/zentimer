@@ -158,7 +158,6 @@ function App() {
     <div className="min-h-screen relative noise-overlay">
       <Header
         onOpenSettings={() => setSettingsOpen(true)}
-        onNavigateDownload={() => setView('download')}
         onNavigateHome={() => setView('home')}
         currentView={view}
       />

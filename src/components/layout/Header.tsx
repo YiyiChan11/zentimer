@@ -3,16 +3,15 @@
 // ──────────────────────────────────────────────
 
 import { motion } from 'framer-motion'
-import { Settings, Download } from 'lucide-react'
+import { Settings } from 'lucide-react'
 
 interface HeaderProps {
   onOpenSettings: () => void
-  onNavigateDownload: () => void
   onNavigateHome: () => void
   currentView: 'home' | 'download'
 }
 
-export function Header({ onOpenSettings, onNavigateDownload, onNavigateHome, currentView }: HeaderProps) {
+export function Header({ onOpenSettings, onNavigateHome, currentView }: HeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -71,17 +70,6 @@ export function Header({ onOpenSettings, onNavigateDownload, onNavigateHome, cur
               返回计时
             </button>
           )}
-          <button
-            onClick={onNavigateDownload}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-              currentView === 'download'
-                ? 'glass text-focus-300'
-                : 'glass text-ink-300 hover:text-ink-100 hover:bg-white/5'
-            }`}
-            title="下载"
-          >
-            <Download size={17} />
-          </button>
           <button
             onClick={onOpenSettings}
             className="w-10 h-10 rounded-full glass flex items-center justify-center text-ink-300 hover:text-ink-100 hover:bg-white/5 transition-all"
