@@ -29,16 +29,19 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
 
   // Animate physical container size + slight nudge on phase change.
   //   idle   = compact (~230px / 56vw)
-  //   active = large (~420px / 82vw) nearly filling width with side margins,
-  //            plus a tiny y-nudge so the center feels grounded.
-  // Spring config tuned for a "silky" feel — not too bouncy, not too stiff.
+  //   active = large (~420px / 82vw) nearly filling width with side margins.
+  // Direction-aware spring:
+  //   → active (grow):   softer/slower silky expand
+  //   → idle   (shrink): snappier/faster collapse back to the initial UI
   useEffect(() => {
     controls.start({
       width:  isIdle ? 'min(230px, 56vw)' : 'min(420px, 82vw)',
       height: isIdle ? 'min(230px, 56vw)' : 'min(420px, 82vw)',
       scale: 1,
-      y: isIdle ? 0 : 0,
-      transition: { type: 'spring', damping: 22, stiffness: 100, mass: 1.1 },
+      y: 0,
+      transition: isIdle
+        ? { type: 'spring', damping: 26, stiffness: 260, mass: 0.7 }
+        : { type: 'spring', damping: 22, stiffness: 100, mass: 1.1 },
     })
   }, [phase, controls])
 

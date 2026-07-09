@@ -115,7 +115,9 @@ function App() {
                 instead of jumping, paired with the inner scale spring. */}
             <motion.div
               layout
-              transition={{ type: 'spring', damping: 22, stiffness: 130, mass: 1 }}
+              transition={phase === 'idle'
+                ? { type: 'spring', damping: 26, stiffness: 260, mass: 0.7 }
+                : { type: 'spring', damping: 22, stiffness: 130, mass: 1 }}
               className={`w-full flex flex-col items-center min-h-0 ${phase !== 'idle' ? 'flex-1 justify-center' : ''}`}
             >
               <CircularTimer remaining={remaining} total={total} phase={phase} />
