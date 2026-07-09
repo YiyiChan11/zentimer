@@ -95,6 +95,7 @@ export const en: Record<string, string> = {
   // Misc
   sessionsToday: 'Today',
   sessionsCount: 'sessions',
+  sessionStats: 'Today {count} sessions',
   doubleClickReturn: 'Double-click to return',
   floatingWindow: 'Floating Window',
   floatingOpen: 'Open Floating',

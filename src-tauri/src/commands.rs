@@ -100,14 +100,26 @@ pub async fn floating_toggle_timer(app: AppHandle) -> Result<(), String> {
 }
 
 /// Set the floating window opacity (0.0–1.0 from slider).
-/// Remapped so that 0% → ~5% visible (user can still see the window shape)
-/// and 100% → fully opaque. Pure invisibility is confusing — you lose the
-/// window entirely and can't find it to drag or adjust.
+///
+/// Two-layer opacity system:
+///   Layer 1 — Win32 window alpha (base visibility floor):
+///     slider 0% → 15%, slider 100% → 100%
+///     This ensures text is always at least somewhat visible.
+///
+///   Layer 2 — CSS per-element opacity (set via JS in floating.html):
+///     Container shape fades more aggressively (ghostly at 0%).
+///     Text stays brighter than the frame by ~8-12 percentage points,
+///     so digits are always the most legible element.
 #[tauri::command]
 pub async fn set_floating_opacity(app: AppHandle, opacity: f64) -> Result<(), String> {
-    // Map [0, 1] → [0.05, 1.0]: "0%" still shows a faint ghost,
-    // "100%" is completely solid.
-    let clamped = 0.05 + opacity.clamp(0.0, 1.0) * 0.95;
+    let raw = opacity.clamp(0.0, 1.0);
+
+    // ── Layer 1: Win32 window alpha ──
+    // Map [0, 1] → [0.15, 1.0]: even at "0%" the window retains
+    // enough alpha that white text (~90% CSS opacity) reads as ~13-14%
+    // effective brightness — in the user's desired 10-15% range.
+    let window_alpha = 0.15 + raw * 0.85;
+
     #[cfg(windows)]
     {
         if let Some(window) = app.get_webview_window("floating") {
@@ -118,23 +130,25 @@ pub async fn set_floating_opacity(app: AppHandle, opacity: f64) -> Result<(), St
                     GWL_EXSTYLE, LWA_ALPHA, WS_EX_LAYERED,
                 };
                 unsafe {
-                    // A Tauri `.transparent(true)` window does NOT reliably carry
-                    // WS_EX_LAYERED, which SetLayeredWindowAttributes REQUIRES.
-                    // Force the layered style on first, otherwise the alpha call
-                    // fails silently and the opacity never actually changes.
                     let ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
                     if ex & (WS_EX_LAYERED.0 as isize) == 0 {
                         SetWindowLongPtrW(hwnd, GWL_EXSTYLE, ex | WS_EX_LAYERED.0 as isize);
                     }
-                    // crkey = 0 (ignored by LWA_ALPHA), bAlpha = 0..255 global alpha
                     let _ = SetLayeredWindowAttributes(
                         hwnd,
                         COLORREF(0),
-                        (clamped * 255.0).round() as u8,
+                        (window_alpha * 255.0).round() as u8,
                         LWA_ALPHA,
                     );
                 }
             }
+
+            // ── Layer 2: Tell the HTML to adjust internal CSS opacities ──
+            // The JS function setOpacityLevel() will:
+            //   - Fade container background/border/shadow more than the window
+            //   - Keep text opacity always 8-12 pts ahead of the shape
+            let js = format!("if(window.setOpacityLevel)window.setOpacityLevel({})", raw);
+            let _ = window.eval(&js);
         }
     }
     #[cfg(not(windows))]

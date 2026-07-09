@@ -95,6 +95,7 @@ export const zh: Record<string, string> = {
   // Misc
   sessionsToday: '今日',
   sessionsCount: '轮',
+  sessionStats: '今日 {count} 轮',
   doubleClickReturn: '双击返回主窗口',
   floatingWindow: '悬浮窗',
   floatingOpen: '开启悬浮窗',

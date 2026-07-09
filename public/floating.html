@@ -19,18 +19,19 @@
       width: 100%;
       height: 100%;
       border-radius: 16px;
-      background: rgba(18, 18, 22, 0.70);
+      /* background-alpha is set dynamically by setOpacityLevel() */
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      /* border-alpha set dynamically */
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: grab;
       touch-action: none;
-      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      transition: background 0.35s ease, border-color 0.35s ease,
+                  box-shadow 0.35s ease, opacity 0.35s ease;
+      /* box-shadow set dynamically */
       position: relative;
     }
     #container:active { cursor: grabbing; }
@@ -58,7 +59,9 @@
       letter-spacing: -0.02em;
       font-variant-numeric: tabular-nums;
       line-height: 1;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 24px rgba(255, 255, 255, 0.25);
+      /* text-shadow glow makes text pop against low-opacity container */
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 0 24px rgba(255, 255, 255, 0.3);
+      /* opacity set dynamically by setOpacityLevel() — always > container */
     }
     #phase {
       font-size: 10px;
@@ -66,7 +69,8 @@
       margin-top: 4px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      text-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.35);
+      /* opacity set dynamically by setOpacityLevel() */
     }
     #container.focus #phase { color: #fbbf24; }
     #container.break #phase { color: #2dd4bf; }
@@ -122,6 +126,59 @@
     var progressBar = document.getElementById('progress-bar');
     var closeBtn = document.getElementById('close-btn');
 
+    // ── Current raw opacity level (0–1) for style recalc on phase change ──
+    var _currentRaw = 1.0;
+
+    // ── Two-layer opacity system ──
+    // Called by Rust set_floating_opacity command via window.eval().
+    // raw in [0, 1] is the slider value (0% - 100%).
+    //
+    // Layer 1 (Win32, set in Rust): window alpha = 0.15 + raw * 0.85
+    //   -> At slider 0%: everything is at least 15% visible
+    //
+    // Layer 2 (CSS, here): per-element fine-tuning so text reads brighter
+    //   than the frame:
+    //     Container bg alpha:  0.08 + raw * 0.64  (ghostly->solid)
+    //     Text opacity:         0.90 + raw * 0.10  (always high)
+    //     Phase opacity:        0.65 + raw * 0.35
+    //
+    // Effective brightness examples:
+    //   raw=0 (slider 0%):
+    //     win=15%, bg_eff~1.2%, time_eff~13.5%, phase_eff~9.8%
+    //     -> ghostly rectangle, readable digits
+    //   raw=1 (slider 100%):
+    //     win=100%, bg=72%, time=100%, phase=100%
+    //     -> fully solid window
+    window.setOpacityLevel = function(raw) {
+      _currentRaw = Math.max(0, Math.min(1, raw));
+
+      // Container shape -- fades more aggressively than the window
+      var bgAlpha = (0.08 + _currentRaw * 0.64).toFixed(2);       // 0.08 -> 0.72
+      var borderAlpha = (0.01 + _currentRaw * 0.09).toFixed(2);    // 0.01 -> 0.10
+      var shadowAlpha = (0.08 + _currentRaw * 0.42).toFixed(2);    // 0.08 -> 0.50
+
+      // Text -- stays consistently brighter than the shape (~8-12 pts ahead)
+      var timeOp = (0.90 + _currentRaw * 0.10).toFixed(2);         // 0.90 -> 1.00
+      var phaseOp = (0.65 + _currentRaw * 0.35).toFixed(2);        // 0.65 -> 1.00
+
+      // Glow intensity scales with raw so text "pops" more at low opacities
+      var glowA = (0.7 - _currentRaw * 0.15).toFixed(2);           // 0.70 -> 0.55
+
+      container.style.background = 'rgba(18, 18, 22, ' + bgAlpha + ')';
+      container.style.borderColor = 'rgba(255, 255, 255, ' + borderAlpha + ')';
+      container.style.boxShadow = '0 8px 32px rgba(0, 0, 0, ' + shadowAlpha + ')';
+
+      timeEl.style.opacity = timeOp;
+      timeEl.style.textShadow =
+        '0 0 10px rgba(255, 255, 255, ' + glowA + '), ' +
+        '0 0 24px rgba(255, 255, 255, ' + (glowA * 0.45).toFixed(2) + ')';
+
+      phaseEl.style.opacity = phaseOp;
+    };
+
+    // Initialise to full opacity (default)
+    setOpacityLevel(1.0);
+
     // ── IPC helper: uses __TAURI_INTERNALS__ (always available in Tauri 2.0) ──
     function invoke(cmd, args) {
       return window.__TAURI_INTERNALS__.invoke(cmd, args);
@@ -146,6 +203,9 @@
       else if (data.phase === 'break' || data.phase === 'buffer') container.classList.add('break');
       else if (data.phase === 'paused') container.classList.add('paused');
 
+      // Re-apply current opacity level (phase class may override inline styles)
+      setOpacityLevel(_currentRaw);
+
       // Progress bar (0-1 -> 0-156)
       progressBar.setAttribute('width', String(156 * data.progress));
 
@@ -158,10 +218,10 @@
     };
 
     // ── Interactions ──
-    // Single tap  → pause / resume  (floating_toggle_timer)
-    // Double tap  → open main window (floating_show_main)
-    // Long press  → drag the window  (drag_floating_window)
-    // × button    → close floating window
+    // Single tap  -> pause / resume  (floating_toggle_timer)
+    // Double tap  -> open main window (floating_show_main)
+    // Long press  -> drag the window  (drag_floating_window)
+    // x button    -> close floating window
     var pressInfo = null;   // { x, y, longTimer }
     var dragging = false;
     var moved = false;
@@ -189,7 +249,7 @@
       pressInfo = { x: e.clientX, y: e.clientY };
       moved = false;
       var timer = setTimeout(function() {
-        startDrag(); // long press → drag
+        startDrag(); // long press -> drag
       }, LONG_PRESS_MS);
       pressInfo.longTimer = timer;
     });
@@ -201,7 +261,7 @@
       if (Math.hypot(dx, dy) > MOVE_THRESHOLD) moved = true;
       if (!dragging && moved) {
         clearTimeout(pressInfo.longTimer);
-        startDrag(); // moved before long-press fired → drag
+        startDrag(); // moved before long-press fired -> drag
       }
     });
 
@@ -215,12 +275,12 @@
 
       var now = Date.now();
       if (now - lastTap < DOUBLE_TAP_MS) {
-        // Double tap → open main window
+        // Double tap -> open main window
         lastTap = 0;
         if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; }
         invoke('floating_show_main').catch(function(){});
       } else {
-        // Single tap → pause / resume (after a short delay to detect double tap)
+        // Single tap -> pause / resume (after a short delay to detect double tap)
         lastTap = now;
         tapTimer = setTimeout(function() {
           tapTimer = null;
