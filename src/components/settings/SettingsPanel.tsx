@@ -232,7 +232,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
               {/* ── Update ── */}
               <section>
                 <SectionTitle icon={<RefreshCw size={15} />} title={t('update')} />
-                <div className="mt-4 space-y-3">
+                <div className="mt-4 flex flex-col gap-3">
                   {/* Current version + Check button */}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-ink-300">{t('currentVersion')}</span>
@@ -256,16 +256,16 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                     )}
                   </button>
 
-                  {/* ═══ Full update status card (below check button) ═══ */}
+                  {/* ═══ Full update status card — always block-level below check button ═══ */}
                   <AnimatePresence mode="wait">
                     {updater.status === 'available' && updater.updateInfo && (
                       <motion.div
                         key="available"
-                        initial={{ opacity: 0, height: 0, y: -8 }}
-                        animate={{ opacity: 1, height: 'auto', y: 0 }}
-                        exit={{ opacity: 0, height: 0, y: -8 }}
-                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                        className="overflow-hidden"
+                        initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.96, y: -6 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        className="block w-full"
                       >
                         <div className="rounded-2xl border border-focus-500/20 bg-focus-500/5 p-4 space-y-3">
                           {/* Header row */}
@@ -310,11 +310,11 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                     {updater.status === 'downloading' && (
                       <motion.div
                         key="downloading"
-                        initial={{ opacity: 0, height: 0, y: -8 }}
-                        animate={{ opacity: 1, height: 'auto', y: 0 }}
-                        exit={{ opacity: 0, height: 0, y: -8 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
+                        initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.96, y: -6 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        className="block w-full"
                       >
                         <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 space-y-3">
                           <div className="flex items-center gap-3">
@@ -336,11 +336,11 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                     {updater.status === 'installed' && (
                       <motion.div
                         key="installed"
-                        initial={{ opacity: 0, height: 0, y: -8 }}
-                        animate={{ opacity: 1, height: 'auto', y: 0 }}
-                        exit={{ opacity: 0, height: 0, y: -8 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
+                        initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.96, y: -6 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        className="block w-full"
                       >
                         <div className="rounded-2xl border border-green-500/15 bg-green-500/5 p-4 flex flex-col items-center gap-2 text-center">
                           <Check size={24} className="text-green-400" />
@@ -357,7 +357,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="text-xs text-emerald-400/70 text-center py-1.5"
+                        className="text-xs text-emerald-400/70 text-center py-1.5 block"
                       >
                         {t('updateUpToDate')}
                       </motion.p>
@@ -366,11 +366,11 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                     {updater.status === 'error' && (
                       <motion.div
                         key="error"
-                        initial={{ opacity: 0, height: 0, y: -8 }}
-                        animate={{ opacity: 1, height: 'auto', y: 0 }}
-                        exit={{ opacity: 0, height: 0, y: -8 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
+                        initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.96, y: -6 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        className="block w-full"
                       >
                         <div className="rounded-2xl border border-red-500/15 bg-red-500/5 p-4 space-y-2">
                           <div className="flex items-start gap-2">

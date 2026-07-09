@@ -101,14 +101,39 @@ pub async fn floating_toggle_timer(app: AppHandle) -> Result<(), String> {
 
 /// Set the floating window opacity (0.0–1.0). Lets the user make the
 /// always-on-top mini window more or less transparent from the settings.
+///
+/// NOTE: Tauri 2.11 does not expose `WebviewWindow::set_opacity`, so on
+/// Windows we call the Win32 `SetLayeredWindowAttributes` API directly via
+/// the native HWND. The floating window is created with `.transparent(true)`
+/// (WS_EX_LAYERED), which is exactly what this API requires.
 #[tauri::command]
 pub async fn set_floating_opacity(app: AppHandle, opacity: f64) -> Result<(), String> {
-    if let Some(window) = app.get_webview_window("floating") {
-        // Clamp to a safe range so the window never becomes fully invisible
-        let clamped = opacity.clamp(0.3, 1.0);
-        window
-            .set_opacity(clamped)
-            .map_err(|e| e.to_string())?;
+    // Clamp to a safe range so the window never becomes fully invisible
+    let clamped = opacity.clamp(0.3, 1.0);
+    #[cfg(windows)]
+    {
+        if let Some(window) = app.get_webview_window("floating") {
+            if let Ok(hwnd) = window.hwnd() {
+                use windows::Win32::Foundation::COLORREF;
+                use windows::Win32::UI::WindowsAndMessaging::{
+                    SetLayeredWindowAttributes, LWA_ALPHA,
+                };
+                unsafe {
+                    // crkey = 0 (ignored by LWA_ALPHA), bAlpha = 0..255 global alpha
+                    let _ = SetLayeredWindowAttributes(
+                        hwnd,
+                        COLORREF(0),
+                        (clamped * 255.0).round() as u8,
+                        LWA_ALPHA,
+                    );
+                }
+            }
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        // Non-Windows targets: no-op (floating window is Windows-only for now)
+        let _ = (&app, clamped);
     }
     Ok(())
 }

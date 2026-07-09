@@ -115,16 +115,26 @@ function App() {
               <SessionStats completed={completedSessions} />
             </div>
 
-            {/* Circular timer — in active mode, flex-1 centers it in the space
-                above the controls; idle keeps it compact near the top.
-                `layout` makes the position shift (top → centered) animate smoothly
-                instead of jumping, paired with the inner scale spring. */}
+            {/* Circular timer — SINGLE unified animation source for position + size.
+
+                idle   → compact near top, small ring (~230px)
+                active → vertically centered, large ring (~420px)
+
+                Both the container's physical dimensions (via animate) and its
+                layout position (flex-1 vs static) are driven by ONE spring so
+                scaling and moving are perfectly synchronized — no jump/stutter. */}
             <motion.div
               layout
+              animate={{
+                width: phase === 'idle' ? 'min(230px, 56vw)' : 'min(420px, 82vw)',
+                height: phase === 'idle' ? 'min(230px, 56vw)' : 'min(420px, 82vw)',
+              }}
               transition={phase === 'idle'
+                // → shrink back to idle: snappy but not harsh
                 ? { type: 'spring', damping: 26, stiffness: 260, mass: 0.7 }
-                : { type: 'spring', damping: 22, stiffness: 130, mass: 1 }}
-              className={`w-full flex flex-col items-center min-h-0 ${phase !== 'idle' ? 'flex-1 justify-center' : ''}`}
+                // → grow into focus: silky smooth, slightly slower for elegance
+                : { type: 'spring', damping: 22, stiffness: 100, mass: 1.1 }}
+              className={`flex flex-col items-center justify-center ${phase !== 'idle' ? 'flex-1 min-h-0' : ''}`}
             >
               <CircularTimer remaining={remaining} total={total} phase={phase} />
             </motion.div>

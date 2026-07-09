@@ -1,12 +1,15 @@
 // ──────────────────────────────────────────────
 // CircularTimer — The centerpiece SVG progress ring (i18n ready)
 // Phase-responsive: idle = compact small ring,
-// focus/break/buffer = large expanded ring with smooth spring animation
+// focus/break/buffer = large expanded ring.
+//
+// NOTE: All size/position animation is driven by the PARENT motion.div in
+// App.tsx (single unified spring). This component is a passive renderer — it
+// receives phase for color/font choices only and lets the parent resize it.
 // ──────────────────────────────────────────────
 
 import { useMemo } from 'react'
-import { motion, useAnimation } from 'framer-motion'
-import { useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { formatTime, getProgress } from '@/utils/time'
 import { useT } from '@/i18n/useT'
 import type { TimerPhase } from '@/types'
@@ -24,26 +27,10 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference * (1 - progress)
   const { t, locale } = useT()
-  const controls = useAnimation()
   const isIdle = phase === 'idle'
 
-  // Animate physical container size + slight nudge on phase change.
-  //   idle   = compact (~230px / 56vw)
-  //   active = large (~420px / 82vw) nearly filling width with side margins.
-  // Direction-aware spring:
-  //   → active (grow):   softer/slower silky expand
-  //   → idle   (shrink): snappier/faster collapse back to the initial UI
-  useEffect(() => {
-    controls.start({
-      width:  isIdle ? 'min(230px, 56vw)' : 'min(420px, 82vw)',
-      height: isIdle ? 'min(230px, 56vw)' : 'min(420px, 82vw)',
-      scale: 1,
-      y: 0,
-      transition: isIdle
-        ? { type: 'spring', damping: 26, stiffness: 260, mass: 0.7 }
-        : { type: 'spring', damping: 22, stiffness: 100, mass: 1.1 },
-    })
-  }, [phase, controls])
+  // Size/position animation is handled by PARENT (App.tsx unified spring).
+  // This component only manages colors and content per phase.
 
   const colors = useMemo(() => {
     switch (phase) {
@@ -61,11 +48,7 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
   const labels = PHASE_KEYS[phase]
 
   return (
-    <motion.div
-      animate={controls}
-      className="relative flex items-center justify-center"
-      style={{ width: 'min(230px, 56vw)', height: 'min(230px, 56vw)' }}
-    >
+    <div className="relative flex items-center justify-center w-full h-full">
       {/* Outer glow */}
       <div
         className="absolute inset-0 rounded-full blur-3xl transition-all duration-1000"
@@ -179,7 +162,7 @@ export function CircularTimer({ remaining, total, phase }: CircularTimerProps) {
           </span>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
