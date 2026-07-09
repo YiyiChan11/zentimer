@@ -221,7 +221,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                         update({ floatingOpacity: v })
                         if (floatingWindow.isOpen) floatingWindow.setOpacity(v)
                       }}
-                      className="w-full accent-focus-500"
+                      className="w-full opacity-slider"
                     />
                   </div>
 

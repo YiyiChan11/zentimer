@@ -9,7 +9,7 @@
 // ──────────────────────────────────────────────
 
 import { useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, type MotionValue } from 'framer-motion'
 import { formatTime, getProgress } from '@/utils/time'
 import { useT } from '@/i18n/useT'
 import type { TimerPhase } from '@/types'
@@ -21,7 +21,7 @@ const PHASE_KEYS: Record<TimerPhase, { main: string; sub: string }> = {
   buffer: { main: 'phaseBuffer',  sub: 'phaseBufferEn' },
 }
 
-export function CircularTimer({ remaining, total, phase, size }: CircularTimerProps) {
+export function CircularTimer({ remaining, total, phase, fontSizeMV }: CircularTimerProps) {
   const progress = getProgress(remaining, total)
   const radius = 180
   const circumference = 2 * Math.PI * radius
@@ -29,13 +29,8 @@ export function CircularTimer({ remaining, total, phase, size }: CircularTimerPr
   const { t, locale } = useT()
   const isIdle = phase === 'idle'
 
-  // Scale the big time number proportionally to the (animated) ring size so the
-  // digits grow smoothly *with* the ring instead of snapping to a fixed size.
-  // Falls back to a sensible default when size isn't provided (web/PiP).
-  const px = size ?? (isIdle ? 230 : 420)
-  const timeFontPx = Math.round(px * 0.2)
-
-  // Size/position animation is handled by PARENT (App.tsx unified spring).
+  // Size/position animation is handled by the PARENT (App.tsx unified spring),
+  // which passes an animated `fontSizeMV` so the digits grow WITH the ring.
   // This component only manages colors and content per phase.
 
   const colors = useMemo(() => {
@@ -57,8 +52,8 @@ export function CircularTimer({ remaining, total, phase, size }: CircularTimerPr
     <div className="relative flex items-center justify-center w-full h-full">
       {/* Outer glow */}
       <div
-        className="absolute inset-0 rounded-full blur-3xl transition-all duration-1000"
-        style={{ background: colors.glow, scale: isIdle ? 0.8 : 1 }}
+        className="absolute inset-0 rounded-full blur-3xl transition-transform duration-700"
+        style={{ background: colors.glow, transform: isIdle ? 'scale(0.82)' : 'scale(1)' }}
       />
 
       <svg
@@ -144,16 +139,16 @@ export function CircularTimer({ remaining, total, phase, size }: CircularTimerPr
           </span>
         </motion.div>
 
-        <div
+        <motion.div
           className="font-light tabular text-ink-50 leading-none"
           style={{
-            fontSize: `${timeFontPx}px`,
+            fontSize: fontSizeMV ?? 72,
             fontFeatureSettings: '"tnum"',
             letterSpacing: '-0.02em',
           }}
         >
           {formatTime(remaining > 0 ? remaining : 0)}
-        </div>
+        </motion.div>
 
         <div className={`flex items-center gap-2 ${isIdle ? 'mt-2' : 'mt-3'}`}>
           <div
@@ -176,6 +171,6 @@ interface CircularTimerProps {
   remaining: number
   total: number
   phase: TimerPhase
-  /** Animated ring diameter in px (from parent). Used to scale the time font. */
-  size?: number
+  /** Animated time-font size in px (from parent's unified spring). */
+  fontSizeMV?: MotionValue<number>
 }

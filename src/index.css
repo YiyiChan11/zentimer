@@ -146,6 +146,26 @@ input[type="range"] {
   cursor: pointer;
 }
 
+/* Floating-opacity slider: taller hit box so it's easy to grab, but the
+   visible track/thumb stay exactly the same size. The negative margin
+   cancels the extra height so surrounding layout (UI area) is unchanged. */
+.opacity-slider {
+  height: 36px;
+  margin: -10px 0;
+}
+.opacity-slider::-webkit-slider-runnable-track {
+  height: 4px;
+}
+.opacity-slider::-webkit-slider-thumb {
+  margin-top: -6px;
+}
+.opacity-slider::-moz-range-track {
+  height: 4px;
+}
+.opacity-slider::-moz-range-thumb {
+  margin-top: 0;
+}
+
 input[type="range"]::-webkit-slider-runnable-track {
   height: 4px;
   background: rgba(255, 255, 255, 0.1);

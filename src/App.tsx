@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { Header } from '@/components/layout/Header'
 import { CircularTimer } from '@/components/timer/CircularTimer'
 import { TimerControls } from '@/components/timer/TimerControls'
@@ -49,7 +49,59 @@ function App() {
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
-  const ringSize = phase === 'idle' ? Math.min(230, vw * 0.56) : Math.min(420, vw * 0.82)
+
+  // ── UNIFIED animation source ──────────────────────────────────────────
+  // A SINGLE spring (`progress`: 0 = idle, 1 = focus) drives the ring's size,
+  // its vertical position AND the time-font size. Every value is DERIVED from
+  // this one MotionValue, so they are mathematically locked together and can
+  // never desync — no end-of-transition jump, fully silky.
+  const stageRef = useRef<HTMLDivElement>(null)
+  const [stageH, setStageH] = useState(420)
+  useEffect(() => {
+    const measure = () => {
+      const el = stageRef.current
+      if (el) setStageH(el.clientHeight)
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [])
+
+  const idleSize = Math.min(230, vw * 0.56)
+  const activeSize = Math.min(420, vw * 0.82)
+
+  const progress = useSpring(0, { damping: 24, stiffness: 110, mass: 1 })
+  useEffect(() => {
+    progress.set(phase === 'idle' ? 0 : 1)
+  }, [phase, progress])
+
+  // Numeric size endpoints (reactive to viewport changes via MotionValues).
+  const idleSizeMV = useMotionValue(idleSize)
+  const activeSizeMV = useMotionValue(activeSize)
+  useEffect(() => {
+    idleSizeMV.set(idleSize)
+    activeSizeMV.set(activeSize)
+  }, [idleSize, activeSize, idleSizeMV, activeSizeMV])
+
+  const ringSizeMV = useTransform(
+    [progress, idleSizeMV, activeSizeMV],
+    ([p, a, b]: number[]) => a + (b - a) * p,
+  )
+  // Font size tracks the ring size → digits grow WITH the ring, never jump.
+  const fontMV = useTransform(ringSizeMV, (s: number) => Math.round(s * 0.2))
+
+  // Vertical placement: the ring is anchored at the stage's vertical center
+  // (top-1/2) and shifted UP while idle, gliding to center on focus. Driven by
+  // the SAME spring → size growth and downward glide happen as one motion.
+  const shiftUp = Math.max(80, stageH * 0.2)
+  const shiftUpRef = useRef(shiftUp)
+  shiftUpRef.current = shiftUp
+  const ringY = useTransform(progress, (p: number) => -(shiftUpRef.current) * (1 - p))
+
+  // TimeSelector sits just below the idle ring. Its own enter/exit animation
+  // is fully independent (absolute) so it can never perturb the ring.
+  const selectorOffsetRef = useRef(0)
+  selectorOffsetRef.current = -shiftUp + idleSize / 2 + 20
 
   // Listen for actions triggered from the native floating window
   // (single tap → pause/resume, or start focus when idle).
@@ -126,50 +178,50 @@ function App() {
               <SessionStats completed={completedSessions} />
             </div>
 
-            {/* Circular timer — the ring lives in an ALWAYS-centered flex-1 zone.
-                Only its SIZE animates (numeric px → smooth spring). Its vertical
-                position is NOT animated separately; instead it emerges from the
-                flex layout: as the TimeSelector below collapses its height and the
-                ring grows, flex-1 re-centers the ring every frame, so it appears to
-                grow AND glide to center in ONE continuous, silky motion. No `layout`
-                prop, no competing springs, no un-interpolatable min() strings. */}
-            <div className="flex-1 min-h-0 w-full flex items-center justify-center">
-              <motion.div
-                animate={{ width: ringSize, height: ringSize }}
-                transition={phase === 'idle'
-                  // → shrink back to idle: snappy but not harsh
-                  ? { type: 'spring', damping: 26, stiffness: 240, mass: 0.7 }
-                  // → grow into focus: silky smooth, slightly slower for elegance
-                  : { type: 'spring', damping: 24, stiffness: 110, mass: 1 }}
-                className="relative flex items-center justify-center shrink-0"
-              >
-                <CircularTimer remaining={remaining} total={total} phase={phase} size={ringSize} />
-              </motion.div>
-            </div>
+            {/* Stage — relative. Ring + selector are ABSOLUTELY positioned so
+                their animations never couple to layout or to each other. */}
+            <div ref={stageRef} className="relative flex-1 min-h-0 w-full">
 
-            {/* Controls — pinned at the bottom (shrink-0). TimerControls stays mounted
-                across phases so Framer Motion's layout animation can smoothly
-                slide Start Focus → Pause into place. */}
-            <div className="flex flex-col items-center gap-4 w-full max-w-md shrink-0">
-              {/* Time selector — idle only. Exit COLLAPSES height (auto → 0) so the
-                  layout above smoothly reclaims the space, driving the ring's glide
-                  to center. Enter reverses it. */}
-              <AnimatePresence initial={false}>
+              {/* Ring — anchored at the stage's vertical center (top-1/2),
+                  shifted UP while idle. Its size AND its y-offset both derive
+                  from ONE spring (progress) → they are perfectly matched and
+                  animate as a single continuous, silky motion. No competing
+                  springs, no layout-derived position, no end-of-transition jump. */}
+              <motion.div
+                className="absolute left-1/2 top-1/2"
+                style={{ x: '-50%', y: ringY }}
+              >
+                <motion.div
+                  className="-translate-y-1/2"
+                  style={{ width: ringSizeMV, height: ringSizeMV }}
+                >
+                  <CircularTimer remaining={remaining} total={total} phase={phase} fontSizeMV={fontMV} />
+                </motion.div>
+              </motion.div>
+
+              {/* Time selector — idle only, placed just below the idle ring.
+                  Its own enter/exit animation is fully independent. */}
+              <AnimatePresence>
                 {phase === 'idle' && (
                   <motion.div
                     key="timeselector"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
+                    className="absolute left-1/2 top-1/2 w-[min(28rem,90vw)]"
+                    style={{ x: '-50%' }}
+                    initial={{ opacity: 0, y: 60 }}
+                    animate={{ opacity: 1, y: selectorOffsetRef.current }}
+                    exit={{ opacity: 0, y: 60 }}
                     transition={{ type: 'spring', damping: 26, stiffness: 200, mass: 0.8 }}
-                    className="w-full max-w-md overflow-hidden"
                   >
                     <TimeSelector />
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
 
-              {/* Main controls: Start Focus / Pause / Reset / Skip */}
+            {/* Controls — pinned at the bottom (shrink-0). TimerControls stays
+                mounted across phases so Framer Motion's layout animation can
+                smoothly slide Start Focus → Pause into place. */}
+            <div className="flex flex-col items-center gap-4 w-full max-w-md shrink-0">
               <TimerControls />
             </div>
 
