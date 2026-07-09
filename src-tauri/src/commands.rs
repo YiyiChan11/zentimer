@@ -99,6 +99,20 @@ pub async fn floating_toggle_timer(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// Set the floating window opacity (0.0–1.0). Lets the user make the
+/// always-on-top mini window more or less transparent from the settings.
+#[tauri::command]
+pub async fn set_floating_opacity(app: AppHandle, opacity: f64) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("floating") {
+        // Clamp to a safe range so the window never becomes fully invisible
+        let clamped = opacity.clamp(0.3, 1.0);
+        window
+            .set_opacity(clamped)
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 /// Bring the main window to the front when the floating window is double-tapped.
 #[tauri::command]
 pub async fn floating_show_main(app: AppHandle) -> Result<(), String> {

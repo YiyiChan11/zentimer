@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS: Settings = {
   volume: 50,
   autoStartBreak: true,
   autoStartFocus: false,
+  floatingOpacity: 0.9,
   locale: 'zh',
 }
 

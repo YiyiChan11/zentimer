@@ -8,8 +8,9 @@ import { createRoot, type Root } from 'react-dom/client'
 import { listen } from '@tauri-apps/api/event'
 import { useTimerStore } from '@/store/timerStore'
 import { useFloatingStore } from '@/store/floatingStore'
+import { useSettingsStore } from '@/store/settingsStore'
 import { formatTime, getProgress } from '@/utils/time'
-import { isTauri, showFloatingWindow, hideFloatingWindow, updateFloatingTimer } from '@/utils/tauri'
+import { isTauri, showFloatingWindow, hideFloatingWindow, updateFloatingTimer, setFloatingOpacity } from '@/utils/tauri'
 import type { TimerPhase } from '@/types'
 
 // Check if Document PiP is supported (browser fallback)
@@ -30,6 +31,7 @@ const CHANNEL_NAME = 'zentimer-floating-sync'
 /** Content rendered inside the PiP window (browser mode only) */
 function FloatingContent() {
   const { phase, remaining, total } = useTimerStore()
+  const { settings } = useSettingsStore()
   const style = PHASE_STYLES[phase]
   const progress = getProgress(remaining, total)
   const radius = 70
@@ -51,6 +53,13 @@ function FloatingContent() {
         userSelect: 'none',
         position: 'relative',
         overflow: 'hidden',
+        opacity: settings.floatingOpacity,
+        transition: 'opacity 0.3s ease',
+      }}
+      onClick={() => {
+        const store = useTimerStore.getState()
+        if (store.phase === 'idle') store.start()
+        else store.toggle()
       }}
       onDoubleClick={() => {
         window.focus()
@@ -284,6 +293,9 @@ export function useFloatingWindow() {
     if (isTauri()) {
       try {
         await showFloatingWindow()
+        // Apply the user's saved opacity to the freshly-shown window
+        const opacity = useSettingsStore.getState().settings.floatingOpacity
+        await setFloatingOpacity(opacity)
         setOpen(true)
         return
       } catch (e) {
@@ -390,6 +402,15 @@ export function useFloatingWindow() {
     setOpen(false)
   }, [])
 
+  // Live-update the floating window opacity (called from the settings slider)
+  const setOpacity = useCallback(async (opacity: number) => {
+    if (isTauri()) {
+      await setFloatingOpacity(opacity)
+      return
+    }
+    // PiP mode: opacity is applied via settings in <FloatingContent/>
+  }, [])
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -408,5 +429,5 @@ export function useFloatingWindow() {
     }
   }, [])
 
-  return { isOpen, open, close, supported: true }
+  return { isOpen, open, close, setOpacity, supported: true }
 }

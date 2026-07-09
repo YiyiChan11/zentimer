@@ -47,3 +47,14 @@ export async function updateFloatingTimer(
     // Silent fail — this is called every second
   }
 }
+
+/** Set the floating window opacity (0.0–1.0) */
+export async function setFloatingOpacity(opacity: number): Promise<void> {
+  const internals = getTauriInternals()
+  if (!internals) return
+  try {
+    await internals.invoke('set_floating_opacity', { opacity })
+  } catch {
+    // Silent fail — opacity is non-critical
+  }
+}

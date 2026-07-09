@@ -41,12 +41,18 @@ function App() {
   useKeyboardShortcuts()
 
   // Listen for actions triggered from the native floating window
-  // (single tap → pause/resume). Double tap → open main is handled in Rust.
+  // (single tap → pause/resume, or start focus when idle).
+  // Double tap → open main is handled in Rust.
   useEffect(() => {
     if (!isTauri()) return
     let unlisten: (() => void) | undefined
     listen('floating-toggle', () => {
-      useTimerStore.getState().toggle()
+      const store = useTimerStore.getState()
+      if (store.phase === 'idle') {
+        store.start()
+      } else {
+        store.toggle()
+      }
     })
       .then((u) => {
         unlisten = u
@@ -127,8 +133,22 @@ function App() {
                 across phases so Framer Motion's layout animation can smoothly
                 slide Start Focus → Pause into place. */}
             <div className="flex flex-col items-center gap-4 w-full max-w-md shrink-0">
-              {/* Time selector only in idle mode */}
-              {phase === 'idle' && <TimeSelector />}
+              {/* Time selector — only in idle mode, with smooth enter/exit anim:
+                  enter = rise up from below; exit = clump + fade downward */}
+              <AnimatePresence>
+                {phase === 'idle' && (
+                  <motion.div
+                    key="timeselector"
+                    initial={{ opacity: 0, y: 32 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 48, scale: 0.85 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="w-full max-w-md"
+                  >
+                    <TimeSelector />
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Main controls: Start Focus / Pause / Reset / Skip */}
               <TimerControls />

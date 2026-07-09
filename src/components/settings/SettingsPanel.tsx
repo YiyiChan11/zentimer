@@ -189,7 +189,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
               {/* ── Floating window ── */}
               <section>
                 <SectionTitle icon={<PictureInPicture2 size={15} />} title={t('floatingWindow')} />
-                <div className="mt-4 space-y-3">
+                <div className="mt-4 space-y-4">
                   <button
                     onClick={() => (floatingWindow.isOpen ? floatingWindow.close() : floatingWindow.open())}
                     className={`w-full py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
@@ -201,6 +201,30 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                     <PictureInPicture2 size={16} />
                     {floatingWindow.isOpen ? t('floatingClose') : t('floatingOpen')}
                   </button>
+
+                  {/* Opacity slider — placed directly below the Open Floating button */}
+                  <div className="glass rounded-xl px-4 py-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-ink-300">{t('floatingOpacity')}</span>
+                      <span className="text-xs text-ink-400 tabular">
+                        {Math.round(settings.floatingOpacity * 100)}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={30}
+                      max={100}
+                      step={5}
+                      value={Math.round(settings.floatingOpacity * 100)}
+                      onChange={(e) => {
+                        const v = Number(e.target.value) / 100
+                        update({ floatingOpacity: v })
+                        if (floatingWindow.isOpen) floatingWindow.setOpacity(v)
+                      }}
+                      className="w-full accent-focus-500"
+                    />
+                  </div>
+
                   <p className="text-xs text-ink-500">{t('floatingHint')}</p>
                 </div>
               </section>

@@ -39,6 +39,8 @@ export interface Settings {
   autoStartBreak: boolean
   /** Auto-start next focus after break ends */
   autoStartFocus: boolean
+  /** Floating window opacity (0.3–1.0) */
+  floatingOpacity: number
   /** UI language */
   locale: Locale
 }

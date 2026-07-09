@@ -99,10 +99,11 @@ export const zh: Record<string, string> = {
   floatingWindow: '悬浮窗',
   floatingOpen: '开启悬浮窗',
   floatingClose: '关闭悬浮窗',
+  floatingOpacity: '悬浮窗透明度',
   floatingHint: '在屏幕角落显示迷你计时器',
   keyboardHint: '空格 开始/暂停 · Esc 重置',
   quote: '「静而后能安，安而后能虑，虑而后能得。」',
-  version: 'v1.1.8 · 禅意番茄钟',
+  version: 'v1.1.9 · 禅意番茄钟',
 
   // Auto-update
   updateAvailable: '发现新版本',
