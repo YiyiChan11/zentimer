@@ -102,7 +102,7 @@ function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="h-screen flex flex-col items-center justify-start px-6 pt-14 pb-6 overflow-y-auto"
+            className="h-screen flex flex-col items-center justify-start px-6 pt-14 pb-12 overflow-y-auto"
           >
             {/* Session counter */}
             <div className="mb-2 shrink-0">
@@ -110,10 +110,16 @@ function App() {
             </div>
 
             {/* Circular timer — in active mode, flex-1 centers it in the space
-                above the controls; idle keeps it compact near the top */}
-            <div className={`w-full flex flex-col items-center min-h-0 ${phase !== 'idle' ? 'flex-1 justify-center' : ''}`}>
+                above the controls; idle keeps it compact near the top.
+                `layout` makes the position shift (top → centered) animate smoothly
+                instead of jumping, paired with the inner scale spring. */}
+            <motion.div
+              layout
+              transition={{ type: 'spring', damping: 22, stiffness: 130, mass: 1 }}
+              className={`w-full flex flex-col items-center min-h-0 ${phase !== 'idle' ? 'flex-1 justify-center' : ''}`}
+            >
               <CircularTimer remaining={remaining} total={total} phase={phase} />
-            </div>
+            </motion.div>
 
             {/* Controls — always at the bottom (shrink-0). TimerControls stays mounted
                 across phases so Framer Motion's layout animation can smoothly
