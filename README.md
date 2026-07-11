@@ -14,10 +14,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/YiyiChan11/zentimer/releases"><strong>Download for Windows</strong></a> &nbsp;·&nbsp;
+  <a href="https://gitee.com/yiyichan/zentimer-update"><strong>Download for Windows</strong></a> &nbsp;·&nbsp;
   <a href="#web-version">Web App (PWA)</a> &nbsp;·&nbsp;
   <a href="#screenshots">Screenshots</a> &nbsp;·&nbsp;
-  <a href="#architecture">Architecture</a>
+  <a href="#architecture">Architecture</a> &nbsp;·&nbsp;
+  <a href="USAGE.md">Usage Guide (中文)</a>
 </p>
 
 ---
@@ -54,9 +55,12 @@
 ### Web / PWA
 
 ```bash
-# Clone
+# Clone (GitHub, canonical)
 git clone https://github.com/YiyiChan11/zentimer.git
 cd zentimer
+
+# Or use the Gitee mirror (China-friendly)
+# git clone https://gitee.com/yiyichan/zentimer.git
 
 # Install dependencies
 npm install
@@ -176,6 +180,10 @@ This ensures that even at minimum opacity (~5%), the time digits remain clearly 
 
 ### Win32 Transparent Window Alpha
 Tauri 2.11.x does not expose `set_opacity()` on WebviewWindow. The solution uses raw Win32 APIs via the `windows` crate: `SetLayeredWindowAttributes()` with a forced `WS_EX_LAYERED` style via `Get/SetWindowLongPtrW()`. The layered style must be explicitly set — Tauri's `.transparent(true)` does not guarantee it.
+
+## Usage
+
+End-user guide (features, hotkeys, floating window, FAQ): **[USAGE.md](USAGE.md)** (中文).
 
 ## Contributing
 
