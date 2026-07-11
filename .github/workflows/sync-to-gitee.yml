@@ -20,4 +20,8 @@ jobs:
         run: |
           # Configure Gitee as a push-only remote (mirror)
           git remote add gitee https://${GITEE_TOKEN}@gitee.com/yiyichan/zentimer.git || true
-          git push gitee main --force --prune
+          # NON-DESTRUCTIVE push: if yiyichan/zentimer already contains
+          # unrelated content (e.g. update files), the push is REJECTED
+          # instead of force-overwriting and wiping those files.
+          # The update/auto-update repo is yiyichan/zentimer-update (separate).
+          git push gitee main || echo "::warning::Push to Gitee was rejected. yiyichan/zentimer may already hold other content — check it on Gitee before forcing."
