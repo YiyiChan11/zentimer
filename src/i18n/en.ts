@@ -100,11 +100,13 @@ export const en: Record<string, string> = {
   floatingWindow: 'Floating Window',
   floatingOpen: 'Open Floating',
   floatingClose: 'Close Floating',
+  floatingLock: 'Lock Floating',
+  floatingUnlock: 'Unlock Floating',
   floatingOpacity: 'Floating opacity',
   floatingHint: 'Show mini timer in screen corner',
   keyboardHint: 'Space to start/pause · Esc to reset',
   quote: '"Stillness leads to peace, peace leads to clarity, clarity leads to result."',
-  version: 'v1.1.9 · ZenTimer',
+  version: 'v1.1.10 · ZenTimer',
 
   // Auto-update
   updateAvailable: 'Update available',

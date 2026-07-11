@@ -19,10 +19,8 @@
       width: 100%;
       height: 100%;
       border-radius: 16px;
-      /* background-alpha is set dynamically by setOpacityLevel() */
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      /* border-alpha set dynamically */
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -31,7 +29,6 @@
       touch-action: none;
       transition: background 0.35s ease, border-color 0.35s ease,
                   box-shadow 0.35s ease, opacity 0.35s ease;
-      /* box-shadow set dynamically */
       position: relative;
     }
     #container:active { cursor: grabbing; }
@@ -52,6 +49,11 @@
     #container.paused #time {
       text-shadow: 0 0 8px rgba(255, 255, 255, 0.4), 0 0 16px rgba(255, 255, 255, 0.2);
     }
+    /* ── Locked state: all interactions disabled ── */
+    #container.locked {
+      pointer-events: none !important;
+      cursor: default !important;
+    }
     #time {
       font-size: 28px;
       font-weight: 300;
@@ -59,9 +61,7 @@
       letter-spacing: -0.02em;
       font-variant-numeric: tabular-nums;
       line-height: 1;
-      /* text-shadow glow makes text pop against low-opacity container */
       text-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 0 24px rgba(255, 255, 255, 0.3);
-      /* opacity set dynamically by setOpacityLevel() — always > container */
     }
     #phase {
       font-size: 10px;
@@ -70,7 +70,6 @@
       text-transform: uppercase;
       letter-spacing: 0.1em;
       text-shadow: 0 0 6px rgba(255, 255, 255, 0.35);
-      /* opacity set dynamically by setOpacityLevel() */
     }
     #container.focus #phase { color: #fbbf24; }
     #container.break #phase { color: #2dd4bf; }
@@ -80,28 +79,56 @@
       width: 100%; height: 100%;
       pointer-events: none;
     }
-    #close-btn {
+
+    /* ── Action buttons (close + lock) — 24px (1.5x original) ── */
+    .action-btn {
       position: absolute;
-      top: 4px; right: 4px;
-      width: 16px; height: 16px;
+      width: 24px; height: 24px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.10);
       border: none;
-      color: rgba(255, 255, 255, 0.4);
-      font-size: 10px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
       line-height: 1;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0;
       transition: opacity 0.2s, background 0.2s;
       z-index: 10;
     }
-    #container:hover #close-btn { opacity: 1; }
-    #close-btn:hover {
-      background: rgba(255, 80, 80, 0.4);
+    .action-btn:hover {
+      background: rgba(255, 80, 80, 0.40);
       color: rgba(255, 255, 255, 0.9);
+    }
+    /* Lock button specific hover */
+    #lock-btn:hover {
+      background: rgba(245, 158, 11, 0.30);
+      color: #fbbf24;
+    }
+    #lock-btn.locked:hover {
+      background: rgba(99, 160, 157, 0.30);
+      color: #2dd4bf;
+    }
+
+    #close-btn {
+      top: 4px; right: 4px;
+    }
+    #lock-btn {
+      bottom: 4px; right: 4px;
+    }
+    #container:not(:hover) #close-btn,
+    #container:not(:hover) #lock-btn {
+      opacity: 0;
+    }
+    #container:hover #close-btn,
+    #container:hover #lock-btn {
+      opacity: 1;
+    }
+
+    /* SVG icons for buttons */
+    .action-btn svg {
+      display: block;
     }
   </style>
 </head>
@@ -115,7 +142,26 @@
     </svg>
     <div id="time">25:00</div>
     <div id="phase">Ready</div>
-    <button id="close-btn" title="Close">&times;</button>
+
+    <!-- Close button (top-right) -->
+    <button id="close-btn" class="action-btn" title="Close">
+      <!-- Simple × -->
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M3 3l8 8M11 3L3 11"/>
+      </svg>
+    </button>
+
+    <!-- Lock button (bottom-right) -->
+    <button id="lock-btn" class="action-btn" title="Lock floating window">
+      <!-- Unlocked padlock icon -->
+      <svg id="lock-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Unlocked state -->
+        <rect x="3" y="7" width="10" height="8" rx="1.5" />
+        <path d="M5 7V5a3 3 0 0 1 6 0v2" class="shackle-open" />
+        <!-- Hidden locked shackle (shown via JS toggle) -->
+        <path d="M5 7V5a3 3 0 0 1 6 0v0" class="shackle-closed" style="display:none" />
+      </svg>
+    </button>
   </div>
 
   <script>
@@ -125,44 +171,25 @@
     var phaseEl = document.getElementById('phase');
     var progressBar = document.getElementById('progress-bar');
     var closeBtn = document.getElementById('close-btn');
+    var lockBtn = document.getElementById('lock-btn');
+    var lockIconShackleOpen = lockBtn.querySelector('.shackle-open');
+    var lockIconShackleClosed = lockBtn.querySelector('.shackle-closed');
 
     // ── Current raw opacity level (0–1) for style recalc on phase change ──
     var _currentRaw = 1.0;
 
     // ── Two-layer opacity system ──
-    // Called by Rust set_floating_opacity command via window.eval().
-    // raw in [0, 1] is the slider value (0% - 100%).
-    //
-    // Layer 1 (Win32, set in Rust): window alpha = 0.15 + raw * 0.85
-    //   -> At slider 0%: everything is at least 15% visible
-    //
-    // Layer 2 (CSS, here): per-element fine-tuning so text reads brighter
-    //   than the frame:
-    //     Container bg alpha:  0.08 + raw * 0.64  (ghostly->solid)
-    //     Text opacity:         0.90 + raw * 0.10  (always high)
-    //     Phase opacity:        0.65 + raw * 0.35
-    //
-    // Effective brightness examples:
-    //   raw=0 (slider 0%):
-    //     win=15%, bg_eff~1.2%, time_eff~13.5%, phase_eff~9.8%
-    //     -> ghostly rectangle, readable digits
-    //   raw=1 (slider 100%):
-    //     win=100%, bg=72%, time=100%, phase=100%
-    //     -> fully solid window
     window.setOpacityLevel = function(raw) {
       _currentRaw = Math.max(0, Math.min(1, raw));
 
-      // Container shape -- fades more aggressively than the window
-      var bgAlpha = (0.08 + _currentRaw * 0.64).toFixed(2);       // 0.08 -> 0.72
-      var borderAlpha = (0.01 + _currentRaw * 0.09).toFixed(2);    // 0.01 -> 0.10
-      var shadowAlpha = (0.08 + _currentRaw * 0.42).toFixed(2);    // 0.08 -> 0.50
+      var bgAlpha = (0.08 + _currentRaw * 0.64).toFixed(2);
+      var borderAlpha = (0.01 + _currentRaw * 0.09).toFixed(2);
+      var shadowAlpha = (0.08 + _currentRaw * 0.42).toFixed(2);
 
-      // Text -- stays consistently brighter than the shape (~8-12 pts ahead)
-      var timeOp = (0.90 + _currentRaw * 0.10).toFixed(2);         // 0.90 -> 1.00
-      var phaseOp = (0.65 + _currentRaw * 0.35).toFixed(2);        // 0.65 -> 1.00
+      var timeOp = (0.90 + _currentRaw * 0.10).toFixed(2);
+      var phaseOp = (0.65 + _currentRaw * 0.35).toFixed(2);
 
-      // Glow intensity scales with raw so text "pops" more at low opacities
-      var glowA = (0.7 - _currentRaw * 0.15).toFixed(2);           // 0.70 -> 0.55
+      var glowA = (0.7 - _currentRaw * 0.15).toFixed(2);
 
       container.style.background = 'rgba(18, 18, 22, ' + bgAlpha + ')';
       container.style.borderColor = 'rgba(255, 255, 255, ' + borderAlpha + ')';
@@ -179,7 +206,41 @@
     // Initialise to full opacity (default)
     setOpacityLevel(1.0);
 
-    // ── IPC helper: uses __TAURI_INTERNALS__ (always available in Tauri 2.0) ──
+    // ── Lock/Unlock state ──
+    // When locked: container gets pointer-events:none (no drag/click/tap).
+    // The lock button itself remains clickable so user can unlock from the
+    // floating window too (not just the main app settings).
+    var _locked = false;
+
+    window.setLockedState = function(locked) {
+      _locked = !!locked;
+      if (_locked) {
+        container.classList.add('locked');
+        lockBtn.classList.add('locked');
+        lockBtn.title = 'Unlock floating window';
+        lockIconShackleOpen.style.display = 'none';
+        lockIconShackleClosed.style.display = '';
+      } else {
+        container.classList.remove('locked');
+        lockBtn.classList.remove('locked');
+        lockBtn.title = 'Lock floating window';
+        lockIconShackleOpen.style.display = '';
+        lockIconShackleClosed.style.display = 'none';
+      }
+    };
+
+    // Toggle lock when clicking the lock button on the floating window
+    lockBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      _locked = !_locked;
+      setLockedState(_locked);
+      invoke('set_floating_locked', { locked: _locked }).catch(function(){});
+    });
+
+    // Initialise to unlocked
+    setLockedState(false);
+
+    // ── IPC helper ──
     function invoke(cmd, args) {
       return window.__TAURI_INTERNALS__.invoke(cmd, args);
     }
@@ -197,8 +258,7 @@
       };
       phaseEl.textContent = phaseMap[data.phase] || data.phase;
 
-      // Phase styling
-      container.className = '';
+      container.className = _locked ? 'locked' : '';
       if (data.phase === 'focus') container.classList.add('focus');
       else if (data.phase === 'break' || data.phase === 'buffer') container.classList.add('break');
       else if (data.phase === 'paused') container.classList.add('paused');
@@ -206,10 +266,8 @@
       // Re-apply current opacity level (phase class may override inline styles)
       setOpacityLevel(_currentRaw);
 
-      // Progress bar (0-1 -> 0-156)
       progressBar.setAttribute('width', String(156 * data.progress));
 
-      // Progress bar color
       if (data.phase === 'break' || data.phase === 'buffer') {
         progressBar.setAttribute('stroke', 'rgba(45, 212, 191, 0.5)');
       } else {
@@ -217,12 +275,8 @@
       }
     };
 
-    // ── Interactions ──
-    // Single tap  -> pause / resume  (floating_toggle_timer)
-    // Double tap  -> open main window (floating_show_main)
-    // Long press  -> drag the window  (drag_floating_window)
-    // x button    -> close floating window
-    var pressInfo = null;   // { x, y, longTimer }
+    // ── Interactions (only active when not locked) ──
+    var pressInfo = null;
     var dragging = false;
     var moved = false;
     var lastTap = 0;
@@ -233,7 +287,7 @@
     var SINGLE_TAP_DELAY = 280;
 
     function startDrag() {
-      if (dragging) return;
+      if (dragging || _locked) return;
       dragging = true;
       invoke('drag_floating_window').catch(function(){});
     }
@@ -244,12 +298,16 @@
       dragging = false;
     }
 
+    // Guard: ignore interactions when locked
+    function isLocked() { return _locked; }
+
     container.addEventListener('pointerdown', function(e) {
-      if (e.target === closeBtn) return; // let close button handle itself
+      if (isLocked()) return;
+      if (e.target === closeBtn || e.target === lockBtn) return;
       pressInfo = { x: e.clientX, y: e.clientY };
       moved = false;
       var timer = setTimeout(function() {
-        startDrag(); // long press -> drag
+        startDrag();
       }, LONG_PRESS_MS);
       pressInfo.longTimer = timer;
     });
@@ -261,7 +319,7 @@
       if (Math.hypot(dx, dy) > MOVE_THRESHOLD) moved = true;
       if (!dragging && moved) {
         clearTimeout(pressInfo.longTimer);
-        startDrag(); // moved before long-press fired -> drag
+        startDrag();
       }
     });
 
@@ -271,16 +329,14 @@
       var wasDragging = dragging;
       dragging = false;
       pressInfo = null;
-      if (wasDragging || moved) return; // a drag or stray move, not a tap
+      if (wasDragging || moved || isLocked()) return;
 
       var now = Date.now();
       if (now - lastTap < DOUBLE_TAP_MS) {
-        // Double tap -> open main window
         lastTap = 0;
         if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; }
         invoke('floating_show_main').catch(function(){});
       } else {
-        // Single tap -> pause / resume (after a short delay to detect double tap)
         lastTap = now;
         tapTimer = setTimeout(function() {
           tapTimer = null;
@@ -293,7 +349,7 @@
     window.addEventListener('pointercancel', resetPress);
     window.addEventListener('blur', resetPress);
 
-    // ── Close button ──
+    // ── Close button (always works regardless of lock state) ──
     closeBtn.addEventListener('click', function(e) {
       e.stopPropagation();
       invoke('close_floating_window').catch(function(){});

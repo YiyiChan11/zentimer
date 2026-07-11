@@ -10,7 +10,7 @@ import { useTimerStore } from '@/store/timerStore'
 import { useFloatingStore } from '@/store/floatingStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import { formatTime, getProgress } from '@/utils/time'
-import { isTauri, showFloatingWindow, hideFloatingWindow, updateFloatingTimer, setFloatingOpacity } from '@/utils/tauri'
+import { isTauri, showFloatingWindow, hideFloatingWindow, updateFloatingTimer, setFloatingOpacity, setFloatingLocked } from '@/utils/tauri'
 import type { TimerPhase } from '@/types'
 
 // Check if Document PiP is supported (browser fallback)
@@ -214,7 +214,9 @@ document.body.onclick = () => {
 
 export function useFloatingWindow() {
   const isOpen = useFloatingStore((s) => s.isOpen)
+  const isLocked = useFloatingStore((s) => s.isLocked)
   const setOpen = useFloatingStore((s) => s.setOpen)
+  const setLockedState = useFloatingStore((s) => s.setLocked)
   const pipWindowRef = useRef<Window | null>(null)
   const rootRef = useRef<Root | null>(null)
   const popupRef = useRef<Window | null>(null)
@@ -411,6 +413,24 @@ export function useFloatingWindow() {
     // PiP mode: opacity is applied via settings in <FloatingContent/>
   }, [])
 
+  // Lock / unlock floating window interactivity
+  const lock = useCallback(async () => {
+    if (!isTauri()) return
+    setLockedState(true)
+    await setFloatingLocked(true)
+  }, [setLockedState])
+
+  const unlock = useCallback(async () => {
+    if (!isTauri()) return
+    setLockedState(false)
+    await setFloatingLocked(false)
+  }, [setLockedState])
+
+  const toggleLock = useCallback(async () => {
+    const newLocked = !useFloatingStore.getState().isLocked
+    if (newLocked) { lock() } else { unlock() }
+  }, [lock, unlock])
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -429,5 +449,5 @@ export function useFloatingWindow() {
     }
   }, [])
 
-  return { isOpen, open, close, setOpacity, supported: true }
+  return { isOpen, isLocked, open, close, setOpacity, lock, unlock, toggleLock, supported: true }
 }

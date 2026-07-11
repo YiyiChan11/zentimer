@@ -169,3 +169,16 @@ pub async fn floating_show_main(app: AppHandle) -> Result<(), String> {
     }
     Ok(())
 }
+
+/// Lock or unlock the floating window's interactivity.
+/// When locked: pointer-events disabled, cannot drag/click/tap.
+/// Unlock must be done from the main app settings panel.
+#[tauri::command]
+pub async fn set_floating_locked(app: AppHandle, locked: bool) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("floating") {
+        // Tell the HTML to toggle its locked state (CSS + interaction guards)
+        let js = format!("if(window.setLockedState)window.setLockedState({})", locked);
+        window.eval(&js).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}

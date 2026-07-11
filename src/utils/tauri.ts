@@ -58,3 +58,14 @@ export async function setFloatingOpacity(opacity: number): Promise<void> {
     // Silent fail — opacity is non-critical
   }
 }
+
+/** Lock or unlock the floating window's interactivity */
+export async function setFloatingLocked(locked: boolean): Promise<void> {
+  const internals = getTauriInternals()
+  if (!internals) return
+  try {
+    await internals.invoke('set_floating_locked', { locked })
+  } catch {
+    // Silent fail — lock state is non-critical
+  }
+}

@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Volume2, Coffee, Zap, RotateCcw, Globe, PictureInPicture2, RefreshCw, Sparkles, Download, Loader2, Check, AlertCircle } from 'lucide-react'
+import { X, Volume2, Coffee, Zap, RotateCcw, Globe, PictureInPicture2, RefreshCw, Sparkles, Download, Loader2, Check, AlertCircle, Lock, Unlock } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
 import { audioEngine } from '@/utils/audio'
 import { Toggle } from './Toggle'
@@ -203,6 +203,26 @@ export function SettingsPanel({ open, onClose, onNavigateDownload }: SettingsPan
                     <PictureInPicture2 size={16} />
                     {floatingWindow.isOpen ? t('floatingClose') : t('floatingOpen')}
                   </button>
+
+                  {/* Lock/Unlock toggle — visible only when floating window is open */}
+                  {floatingWindow.isOpen && (
+                    <button
+                      onClick={() => floatingWindow.toggleLock()}
+                      className="w-full py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 glass text-ink-300 hover:text-ink-100 hover:bg-white/5"
+                    >
+                      {floatingWindow.isLocked ? (
+                        <>
+                          <Unlock size={15} />
+                          {t('floatingUnlock')}
+                        </>
+                      ) : (
+                        <>
+                          <Lock size={15} />
+                          {t('floatingLock')}
+                        </>
+                      )}
+                    </button>
+                  )}
 
                   {/* Opacity slider — placed directly below the Open Floating button */}
                   <div className="glass rounded-xl px-4 py-3">

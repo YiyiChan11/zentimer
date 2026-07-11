@@ -1,0 +1,23 @@
+name: Sync to Gitee Mirror
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Manual trigger from Actions tab
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Gitee mirror
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          # Configure Gitee as a push-only remote (mirror)
+          git remote add gitee https://${GITEE_TOKEN}@gitee.com/yiyichan/zentimer.git || true
+          git push gitee main --force --prune
