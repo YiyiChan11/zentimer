@@ -5,9 +5,11 @@ All notable changes to ZenTimer are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [1.1.10] — Unreleased (in development)
+## [1.10.1] — 2026-08-12
 
 ### Added
+- **Micro-break counts as focus time** — New `bufferCountsAsFocus` setting. When enabled, the focus countdown keeps running during a micro-break (micro-break time is absorbed into focus). When disabled (default), focus pauses and resumes after the micro-break ends.
+- **Micro-break duration: fixed or random** — New `bufferMode` setting. Choose a fixed micro-break length, or a random range (seconds) recomputed for every micro-break.
 - **Floating window lock/unlock** — New lock button on floating window bottom-right corner; lock toggle in Settings between Close Floating and opacity slider. When locked, the floating window ignores all clicks/drags/taps.
 - **Lock button sizing** — Close and Lock buttons enlarged to 24px (1.5x) for better touch/click targets.
 - **Pause glow dimming** — Circular timer inner glow dims to ~20% when paused, with smooth 700ms transition.
@@ -17,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 - **Download page link** — Removed download icon from header; entry point moved to Settings panel bottom section.
 - **Update UI** — Top floating notification hidden during downloads; inline progress shown only in Settings panel.
-- **Version bump** — 1.1.9 → 1.1.10 for auto-update trigger.
+- **Versioning scheme** — Switched to three-part `X.Y.Z` (patch = small bug fixes / UI tweaks). The previously-shipped `1.1.10` is now the `1.10.0` baseline; this release is `1.10.1`.
 
 ### Documentation
 - Full README with architecture, design decisions, tech stack table
@@ -70,5 +72,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-[1.1.10]: https://github.com/YiyiChan11/zentimer/compare/v1.1.9...main
+[1.10.1]: https://github.com/YiyiChan11/zentimer/compare/v1.1.9...main
 [1.1.9]: https://github.com/YiyiChan11/zentimer/releases/tag/v1.1.9

@@ -45,6 +45,9 @@ export const en: Record<string, string> = {
   bufferTriggerTime: 'Reminder Interval',
   bufferTriggerHint: 'Random reminder every {min}–{max} min',
   bufferDuration: 'Break Duration',
+  bufferDurationMode: 'Micro-break length',
+  bufferCountsAsFocus: 'Count micro-break as focus',
+  bufferCountsAsFocusDesc: 'When on, focus timer keeps running during micro-breaks; when off, focus pauses.',
   earliest: 'Shortest',
   latest: 'Longest',
   volumeSettings: 'Volume',
@@ -106,7 +109,7 @@ export const en: Record<string, string> = {
   floatingHint: 'Show mini timer in screen corner',
   keyboardHint: 'Space to start/pause · Esc to reset',
   quote: '"Stillness leads to peace, peace leads to clarity, clarity leads to result."',
-  version: 'v1.1.10 · ZenTimer',
+  version: 'v1.10.1 · ZenTimer',
 
   // Auto-update
   updateAvailable: 'Update available',

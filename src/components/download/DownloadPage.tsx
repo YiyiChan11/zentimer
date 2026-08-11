@@ -69,7 +69,7 @@ export function DownloadPage({ onNavigateHome }: DownloadPageProps) {
                 if (runningInTauri) {
                   onNavigateHome()
                 } else {
-                  window.open('https://gitee.com/yiyichan/zentimer-update/raw/main/ZenTimer_1.1.10_x64-setup.exe', '_blank')
+                  window.open('https://gitee.com/yiyichan/zentimer-update/raw/main/ZenTimer_1.10.1_x64-setup.exe', '_blank')
                 }
               },
             }}

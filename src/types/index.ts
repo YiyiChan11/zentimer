@@ -31,8 +31,17 @@ export interface Settings {
   /** Buffer trigger: random time between min-max min into focus */
   bufferMinMinute: number
   bufferMaxMinute: number
-  /** Buffer break duration in seconds */
+  /** Buffer break duration in seconds (used when bufferMode is 'fixed') */
   bufferSeconds: number
+  /** Micro-break length mode: fixed seconds or random range */
+  bufferMode: SelectionMode
+  /** Micro-break random range minimum in seconds */
+  bufferRandomMin: number
+  /** Micro-break random range maximum in seconds */
+  bufferRandomMax: number
+  /** When true, focus countdown keeps running during a micro-break;
+   *  when false, focus pauses and resumes after the micro-break ends. */
+  bufferCountsAsFocus: boolean
   /** Master volume 0–100 */
   volume: number
   /** Auto-start break after focus ends */

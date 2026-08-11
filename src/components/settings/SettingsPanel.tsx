@@ -163,13 +163,76 @@ export function SettingsPanel({ open, onClose, onNavigateDownload }: SettingsPan
                           }
                         />
                       </div>
-                      <NumberRow
-                        label={t('bufferDuration')}
-                        value={settings.bufferSeconds}
-                        suffix="秒"
-                        min={5}
-                        max={60}
-                        onChange={(v) => update({ bufferSeconds: v })}
+                      {/* Micro-break length: fixed or random */}
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-ink-300">{t('bufferDurationMode')}</span>
+                      </div>
+                      <div className="flex gap-2 p-1 rounded-xl glass">
+                        <button
+                          onClick={() => update({ bufferMode: 'fixed' })}
+                          className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+                            settings.bufferMode === 'fixed'
+                              ? 'bg-focus-500 text-ink-950'
+                              : 'text-ink-300 hover:text-ink-100'
+                          }`}
+                        >
+                          {t('fixedTime')}
+                        </button>
+                        <button
+                          onClick={() => update({ bufferMode: 'random' })}
+                          className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+                            settings.bufferMode === 'random'
+                              ? 'bg-focus-500 text-ink-950'
+                              : 'text-ink-300 hover:text-ink-100'
+                          }`}
+                        >
+                          {t('randomTime')}
+                        </button>
+                      </div>
+                      {settings.bufferMode === 'fixed' ? (
+                        <NumberRow
+                          label={t('bufferDuration')}
+                          value={settings.bufferSeconds}
+                          suffix="秒"
+                          min={5}
+                          max={60}
+                          onChange={(v) => update({ bufferSeconds: v })}
+                        />
+                      ) : (
+                        <div className="grid grid-cols-2 gap-3">
+                          <NumberRow
+                            label={t('earliest')}
+                            value={settings.bufferRandomMin}
+                            suffix="秒"
+                            min={5}
+                            max={60}
+                            onChange={(v) =>
+                              update({
+                                bufferRandomMin: Math.min(v, settings.bufferRandomMax - 1),
+                              })
+                            }
+                          />
+                          <NumberRow
+                            label={t('latest')}
+                            value={settings.bufferRandomMax}
+                            suffix="秒"
+                            min={5}
+                            max={120}
+                            onChange={(v) =>
+                              update({
+                                bufferRandomMax: Math.max(v, settings.bufferRandomMin + 1),
+                              })
+                            }
+                          />
+                        </div>
+                      )}
+
+                      {/* Micro-break counts as focus time */}
+                      <ToggleRow
+                        label={t('bufferCountsAsFocus')}
+                        description={t('bufferCountsAsFocusDesc')}
+                        checked={settings.bufferCountsAsFocus}
+                        onChange={(v) => update({ bufferCountsAsFocus: v })}
                       />
                     </motion.div>
                   )}

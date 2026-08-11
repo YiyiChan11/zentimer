@@ -77,7 +77,63 @@ function computeNextBufferTime(
   return next
 }
 
-export const useTimerStore = create<TimerStore>((set, get) => ({
+/** Compute the actual micro-break duration: fixed value or random range (seconds) */
+function computeBufferDuration(settings: Settings): number {
+  if (settings.bufferMode === 'random') {
+    const min = Math.min(settings.bufferRandomMin, settings.bufferRandomMax)
+    const max = Math.max(settings.bufferRandomMin, settings.bufferRandomMax)
+    return randomInt(min, max)
+  }
+  return settings.bufferSeconds
+}
+
+export const useTimerStore = create<TimerStore>((set, get) => {
+  // Reconstitute a finished focus session → transition to break
+  const completeFocus = (state: TimerStore) => {
+    audioEngine.play('complete')
+    const settings = useSettingsStore.getState().settings
+    const breakDuration = minutesToSeconds(settings.breakDuration)
+    if (settings.autoStartBreak) {
+      set({
+        phase: 'break',
+        status: 'running',
+        remaining: breakDuration,
+        total: breakDuration,
+        completedSessions: state.completedSessions + 1,
+        _intervalId: null,
+      })
+      get()._startInterval()
+    } else {
+      set({
+        phase: 'break',
+        status: 'paused',
+        remaining: breakDuration,
+        total: breakDuration,
+        completedSessions: state.completedSessions + 1,
+        _intervalId: null,
+      })
+    }
+  }
+
+  // Start a fresh focus session using current settings
+  const startNextFocus = (settings: Settings) => {
+    const focusDuration = computeFocusDuration(settings)
+    const bufferTime = settings.bufferEnabled
+      ? computeBufferTime(settings, focusDuration)
+      : -1
+    set({
+      phase: 'focus',
+      status: 'running',
+      remaining: focusDuration,
+      total: focusDuration,
+      currentFocusDuration: focusDuration,
+      _bufferTime: bufferTime,
+      _intervalId: null,
+    })
+    get()._startInterval()
+  }
+
+  return {
   // ── Initial state ──
   phase: 'idle',
   status: 'stopped',
@@ -197,46 +253,83 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
   tick: () => {
     const state = get()
     if (state.status !== 'running') return
+    const settings = useSettingsStore.getState().settings
 
+    // ── Buffer phase (micro-break) ──
+    if (state.phase === 'buffer') {
+      const newBufRemaining = state.remaining - 1
+
+      if (settings.bufferCountsAsFocus) {
+        // Focus time keeps flowing underneath the micro-break
+        const newFocusRemaining = _focusResumeRemaining - 1
+
+        // Focus finishes during the micro-break → cut it short, go to break
+        if (newFocusRemaining <= 0) {
+          completeFocus(state)
+          return
+        }
+        // Micro-break ends → resume focus with the continuously-decremented time
+        if (newBufRemaining <= 0) {
+          audioEngine.play('chime')
+          const nextBufferTime = computeNextBufferTime(
+            settings,
+            state._bufferTime,
+            state.currentFocusDuration,
+          )
+          _focusResumeRemaining = newFocusRemaining
+          set({
+            phase: 'focus',
+            remaining: newFocusRemaining,
+            total: _focusResumeTotal,
+            _bufferTime: nextBufferTime,
+          })
+          return
+        }
+        // Both count down together
+        _focusResumeRemaining = newFocusRemaining
+        set({ remaining: newBufRemaining })
+        return
+      }
+
+      // Focus frozen during the micro-break (original behaviour)
+      if (newBufRemaining <= 0) {
+        audioEngine.play('chime')
+        const nextBufferTime = computeNextBufferTime(
+          settings,
+          state._bufferTime,
+          state.currentFocusDuration,
+        )
+        set({
+          phase: 'focus',
+          remaining: _focusResumeRemaining,
+          total: _focusResumeTotal,
+          _bufferTime: nextBufferTime,
+        })
+        return
+      }
+      set({ remaining: newBufRemaining })
+      return
+    }
+
+    // ── Focus / Break counting ──
     const newRemaining = state.remaining - 1
 
-    // ── Buffer trigger check (during focus) ──
-    // Micro breaks can fire multiple times per focus session; each is
-    // scheduled at a random offset computed when the previous one ends.
+    // Buffer trigger during focus
     if (state.phase === 'focus' && state._bufferTime > 0) {
       const elapsed = state.total - newRemaining
       if (elapsed >= state._bufferTime) {
         audioEngine.play('ding')
-        // Enter buffer phase: pause the focus countdown, start micro-break
-        const settings = useSettingsStore.getState().settings
-        // Remember focus remaining/total so we can resume after the break
+        const duration = computeBufferDuration(settings)
+        // Remember focus progress so we can resume after the break
         _focusResumeRemaining = newRemaining
         _focusResumeTotal = state.total
         set({
           phase: 'buffer',
-          remaining: settings.bufferSeconds,
-          total: settings.bufferSeconds,
+          remaining: duration,
+          total: duration,
         })
         return
       }
-    }
-
-    // ── Buffer ended → resume focus and schedule the next one ──
-    if (state.phase === 'buffer' && newRemaining <= 0) {
-      audioEngine.play('chime')
-      const settings = useSettingsStore.getState().settings
-      const nextBufferTime = computeNextBufferTime(
-        settings,
-        state._bufferTime,
-        state.currentFocusDuration,
-      )
-      set({
-        phase: 'focus',
-        remaining: _focusResumeRemaining,
-        total: _focusResumeTotal,
-        _bufferTime: nextBufferTime,
-      })
-      return
     }
 
     // ── Phase complete ──
@@ -245,50 +338,11 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
       if (_intervalId) clearInterval(_intervalId)
 
       if (state.phase === 'focus') {
-        audioEngine.play('complete')
-        const settings = useSettingsStore.getState().settings
-        const breakDuration = minutesToSeconds(settings.breakDuration)
-
-        if (settings.autoStartBreak) {
-          set({
-            phase: 'break',
-            status: 'running',
-            remaining: breakDuration,
-            total: breakDuration,
-            completedSessions: state.completedSessions + 1,
-            _intervalId: null,
-          })
-          get()._startInterval()
-        } else {
-          set({
-            phase: 'break',
-            status: 'paused',
-            remaining: breakDuration,
-            total: breakDuration,
-            completedSessions: state.completedSessions + 1,
-            _intervalId: null,
-          })
-        }
+        completeFocus(state)
       } else if (state.phase === 'break') {
         audioEngine.play('complete')
-        const settings = useSettingsStore.getState().settings
-
         if (settings.autoStartFocus) {
-          // Start next focus with same settings
-          const focusDuration = computeFocusDuration(settings)
-          const bufferTime = settings.bufferEnabled
-            ? computeBufferTime(settings, focusDuration)
-            : -1
-          set({
-            phase: 'focus',
-            status: 'running',
-            remaining: focusDuration,
-            total: focusDuration,
-            currentFocusDuration: focusDuration,
-            _bufferTime: bufferTime,
-            _intervalId: null,
-          })
-          get()._startInterval()
+          startNextFocus(settings)
         } else {
           set({
             phase: 'idle',
@@ -317,7 +371,7 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
     }, 1000)
     set({ _intervalId: id })
   },
-}))
+}})
 
 // Module-level variables to track focus resumption after buffer
 let _focusResumeRemaining = 0

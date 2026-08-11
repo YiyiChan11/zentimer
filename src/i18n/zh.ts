@@ -45,6 +45,9 @@ export const zh: Record<string, string> = {
   bufferTriggerTime: '提醒间隔',
   bufferTriggerHint: '每隔 {min}–{max} 分钟随机提醒一次',
   bufferDuration: '微休息时长',
+  bufferDurationMode: '微休息时长模式',
+  bufferCountsAsFocus: '微休息计入专注时间',
+  bufferCountsAsFocusDesc: '开启后微休息期间专注倒计时继续流逝；关闭则微休息时暂停专注。',
   earliest: '最短',
   latest: '最长',
   volumeSettings: '音量设置',
@@ -106,7 +109,7 @@ export const zh: Record<string, string> = {
   floatingHint: '在屏幕角落显示迷你计时器',
   keyboardHint: '空格 开始/暂停 · Esc 重置',
   quote: '「静而后能安，安而后能虑，虑而后能得。」',
-  version: 'v1.1.10 · 禅意番茄钟',
+  version: 'v1.10.1 · 禅意番茄钟',
 
   // Auto-update
   updateAvailable: '发现新版本',
