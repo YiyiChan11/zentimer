@@ -55,21 +55,21 @@
       cursor: default !important;
     }
     #time {
-      font-size: 28px;
+      font-size: 22px;
       font-weight: 300;
       color: #ffffff;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
       font-variant-numeric: tabular-nums;
       line-height: 1;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 0 24px rgba(255, 255, 255, 0.3);
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.25);
     }
     #phase {
-      font-size: 10px;
-      color: #d6d3d1;
-      margin-top: 4px;
+      font-size: 8px;
+      color: rgba(214, 211, 209, 0.7);
+      margin-top: 3px;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      text-shadow: 0 0 6px rgba(255, 255, 255, 0.35);
+      letter-spacing: 0.14em;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
     }
     #container.focus #phase { color: #fbbf24; }
     #container.break #phase { color: #2dd4bf; }
@@ -80,42 +80,44 @@
       pointer-events: none;
     }
 
-    /* ── Action buttons (close + lock) — 24px (1.5x original) ── */
+    /* ── Action buttons (close + lock) — compact premium style ──
+         Visual icon is small; hit area stays 24px for easy clicking. ── */
     .action-btn {
       position: absolute;
       width: 24px; height: 24px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.10);
+      background: rgba(255, 255, 255, 0.08);
       border: none;
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 14px;
+      color: rgba(255, 255, 255, 0.45);
+      font-size: 10px;
       line-height: 1;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.2s, background 0.2s;
+      transition: opacity 0.2s, background 0.2s, transform 0.15s ease;
       z-index: 10;
     }
     .action-btn:hover {
-      background: rgba(255, 80, 80, 0.40);
-      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 80, 80, 0.35);
+      color: rgba(255, 255, 255, 0.85);
+      transform: scale(1.08);
     }
     /* Lock button specific hover */
     #lock-btn:hover {
-      background: rgba(245, 158, 11, 0.30);
+      background: rgba(245, 158, 11, 0.25);
       color: #fbbf24;
     }
     #lock-btn.locked:hover {
-      background: rgba(99, 160, 157, 0.30);
+      background: rgba(99, 160, 157, 0.25);
       color: #2dd4bf;
     }
 
     #close-btn {
-      top: 4px; right: 4px;
+      top: 3px; right: 3px;
     }
     #lock-btn {
-      bottom: 4px; right: 4px;
+      bottom: 3px; right: 3px;
     }
     #container:not(:hover) #close-btn,
     #container:not(:hover) #lock-btn {
@@ -146,20 +148,20 @@
     <!-- Close button (top-right) -->
     <button id="close-btn" class="action-btn" title="Close">
       <!-- Simple × -->
-      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-        <path d="M3 3l8 8M11 3L3 11"/>
+      <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <path d="M2 2l6 6M8 2L2 8"/>
       </svg>
     </button>
 
     <!-- Lock button (bottom-right) -->
     <button id="lock-btn" class="action-btn" title="Lock floating window">
       <!-- Unlocked padlock icon -->
-      <svg id="lock-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <svg id="lock-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <!-- Unlocked state -->
-        <rect x="3" y="7" width="10" height="8" rx="1.5" />
-        <path d="M5 7V5a3 3 0 0 1 6 0v2" class="shackle-open" />
+        <rect x="2.5" y="5.5" width="7" height="5.5" rx="1" />
+        <path d="M4 5.5V4a2 2 0 0 1 4 0v1.5" class="shackle-open" />
         <!-- Hidden locked shackle (shown via JS toggle) -->
-        <path d="M5 7V5a3 3 0 0 1 6 0v0" class="shackle-closed" style="display:none" />
+        <path d="M4 5.5V4a2 2 0 0 1 4 0v0" class="shackle-closed" style="display:none" />
       </svg>
     </button>
   </div>

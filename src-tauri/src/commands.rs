@@ -171,14 +171,49 @@ pub async fn floating_show_main(app: AppHandle) -> Result<(), String> {
 }
 
 /// Lock or unlock the floating window's interactivity.
-/// When locked: pointer-events disabled, cannot drag/click/tap.
-/// Unlock must be done from the main app settings panel.
+/// When locked:
+///   - CSS pointer-events disabled (no drag/click/tap inside webview)
+///   - Win32 WS_EX_TRANSPARENT set (mouse clicks pass through to windows behind)
+///   - Unlock must be done from the main app settings panel.
+/// When unlocked:
+///   - WS_EX_TRANSPARENT removed, window accepts input again
 #[tauri::command]
 pub async fn set_floating_locked(app: AppHandle, locked: bool) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("floating") {
-        // Tell the HTML to toggle its locked state (CSS + interaction guards)
+        // ── Tell HTML to toggle its locked state (CSS + interaction guards) ──
         let js = format!("if(window.setLockedState)window.setLockedState({})", locked);
         window.eval(&js).map_err(|e| e.to_string())?;
+
+        // ── Win32 click-through: toggle WS_EX_TRANSPARENT ──
+        #[cfg(windows)]
+        {
+            if let Ok(hwnd) = window.hwnd() {
+                use windows::Win32::UI::WindowsAndMessaging::{
+                    GetWindowLongPtrW, SetWindowLongPtrW,
+                    GWL_EXSTYLE, WS_EX_LAYERED, WS_EX_TRANSPARENT,
+                };
+                unsafe {
+                    let ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+                    // Ensure WS_EX_LAYERED is always set (required for transparency)
+                    let layered = ex | WS_EX_LAYERED.0 as isize;
+                    if locked {
+                        // Add transparent flag → clicks pass through
+                        SetWindowLongPtrW(
+                            hwnd,
+                            GWL_EXSTYLE,
+                            layered | WS_EX_TRANSPARENT.0 as isize,
+                        );
+                    } else {
+                        // Remove transparent flag → window accepts clicks again
+                        SetWindowLongPtrW(
+                            hwnd,
+                            GWL_EXSTYLE,
+                            layered & !(WS_EX_TRANSPARENT.0 as isize),
+                        );
+                    }
+                }
+            }
+        }
     }
     Ok(())
 }
