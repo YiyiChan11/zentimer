@@ -158,49 +158,39 @@ export function SettingsPanel({ open, onClose, onNavigateDownload }: SettingsPan
                         </button>
                       </div>
 
-                      {/* Interval inputs */}
-                      {settings.bufferMode === 'fixed' ? (
+                      {/* Interval inputs — always same layout to prevent jump on toggle */}
+                      {settings.bufferMode === 'random' && (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-ink-500">{t('bufferTriggerHint', { min: String(settings.bufferMinMinute), max: String(settings.bufferMaxMinute) })}</span>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-3">
                         <NumberRow
-                          label={t('bufferFixedInterval')}
+                          label={settings.bufferMode === 'fixed' ? t('bufferFixedInterval') : t('earliest')}
                           value={settings.bufferMinMinute}
                           suffix={t('min')}
                           min={1}
-                          max={30}
-                          onChange={(v) => update({ bufferMinMinute: v, bufferMaxMinute: v })}
+                          max={settings.bufferMode === 'fixed' ? 30 : 15}
+                          onChange={(v) =>
+                            settings.bufferMode === 'fixed'
+                              ? update({ bufferMinMinute: v, bufferMaxMinute: v })
+                              : update({ bufferMinMinute: Math.min(v, settings.bufferMaxMinute - 1) })
+                          }
                         />
-                      ) : (
-                        <>
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-ink-500">{t('bufferTriggerHint', { min: String(settings.bufferMinMinute), max: String(settings.bufferMaxMinute) })}</span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <NumberRow
-                              label={t('earliest')}
-                              value={settings.bufferMinMinute}
-                              suffix={t('min')}
-                              min={1}
-                              max={15}
-                              onChange={(v) =>
-                                update({
-                                  bufferMinMinute: Math.min(v, settings.bufferMaxMinute - 1),
-                                })
-                              }
-                            />
-                            <NumberRow
-                              label={t('latest')}
-                              value={settings.bufferMaxMinute}
-                              suffix={t('min')}
-                              min={3}
-                              max={30}
-                              onChange={(v) =>
-                                update({
-                                  bufferMaxMinute: Math.max(v, settings.bufferMinMinute + 1),
-                                })
-                              }
-                            />
-                          </div>
-                        </>
-                      )}
+                        <NumberRow
+                          label={t('latest')}
+                          value={settings.bufferMode === 'fixed' ? settings.bufferMinMinute : settings.bufferMaxMinute}
+                          suffix={t('min')}
+                          min={settings.bufferMode === 'fixed' ? 1 : 3}
+                          max={30}
+                          onChange={(v) =>
+                            settings.bufferMode === 'fixed'
+                              ? update({ bufferMinMinute: v, bufferMaxMinute: v })
+                              : update({ bufferMaxMinute: Math.max(v, settings.bufferMinMinute + 1) })
+                          }
+                          disabled={settings.bufferMode === 'fixed'}
+                        />
+                      </div>
 
                       {/* ── Micro-break duration (always fixed) ── */}
                       <NumberRow
@@ -551,6 +541,7 @@ function NumberRow({
   min,
   max,
   onChange,
+  disabled = false,
 }: {
   label: string
   value: number
@@ -558,6 +549,7 @@ function NumberRow({
   min: number
   max: number
   onChange: (v: number) => void
+  disabled?: boolean
 }) {
   const [text, setText] = useState(String(value))
 
@@ -581,11 +573,12 @@ function NumberRow({
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm text-ink-200">{label}</span>
+      <span className={`text-sm ${disabled ? 'text-ink-500' : 'text-ink-200'}`}>{label}</span>
       <div className="flex items-center gap-2">
         <button
-          onClick={() => onChange(Math.max(min, value - 1))}
-          className="w-7 h-7 rounded-lg glass flex items-center justify-center text-ink-300 hover:text-ink-100 transition-all text-sm"
+          onClick={() => !disabled && onChange(Math.max(min, value - 1))}
+          disabled={disabled}
+          className="w-7 h-7 rounded-lg glass flex items-center justify-center text-ink-300 hover:text-ink-100 transition-all text-sm disabled:opacity-30 disabled:cursor-default"
         >
           −
         </button>
@@ -598,12 +591,16 @@ function NumberRow({
           onKeyDown={(e) => {
             if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
           }}
-          className="w-14 text-center bg-transparent text-sm text-ink-100 tabular border border-white/10 rounded-md py-1 focus:outline-none focus:border-focus-400"
+          disabled={disabled}
+          className={`w-14 text-center bg-transparent text-sm tabular border border-white/10 rounded-md py-1 focus:outline-none focus:border-focus-400 disabled:opacity-30 disabled:cursor-default ${
+            disabled ? 'text-ink-500' : 'text-ink-100'
+          }`}
         />
         <span className="text-xs text-ink-500">{suffix}</span>
         <button
-          onClick={() => onChange(Math.min(max, value + 1))}
-          className="w-7 h-7 rounded-lg glass flex items-center justify-center text-ink-300 hover:text-ink-100 transition-all text-sm"
+          onClick={() => !disabled && onChange(Math.min(max, value + 1))}
+          disabled={disabled}
+          className="w-7 h-7 rounded-lg glass flex items-center justify-center text-ink-300 hover:text-ink-100 transition-all text-sm disabled:opacity-30 disabled:cursor-default"
         >
           +
         </button>

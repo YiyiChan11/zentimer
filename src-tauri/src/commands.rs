@@ -177,8 +177,14 @@ pub async fn floating_show_main(app: AppHandle) -> Result<(), String> {
 ///   - Unlock must be done from the main app settings panel.
 /// When unlocked:
 ///   - WS_EX_TRANSPARENT removed, window accepts input again
+///
+/// Emits "floating-lock-changed" so the main app's Zustand store stays in sync
+/// when the lock is toggled from the floating window's own button.
 #[tauri::command]
 pub async fn set_floating_locked(app: AppHandle, locked: bool) -> Result<(), String> {
+    // Notify the main window so its Lock Floating button reflects the new state
+    let _ = app.emit("floating-lock-changed", locked);
+
     if let Some(window) = app.get_webview_window("floating") {
         // ── Tell HTML to toggle its locked state (CSS + interaction guards) ──
         let js = format!("if(window.setLockedState)window.setLockedState({})", locked);

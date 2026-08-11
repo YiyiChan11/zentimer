@@ -55,21 +55,21 @@
       cursor: default !important;
     }
     #time {
-      font-size: 22px;
+      font-size: 28px;
       font-weight: 300;
       color: #ffffff;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.02em;
       font-variant-numeric: tabular-nums;
       line-height: 1;
-      text-shadow: 0 0 8px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.25);
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 0 24px rgba(255, 255, 255, 0.3);
     }
     #phase {
-      font-size: 8px;
+      font-size: 10px;
       color: rgba(214, 211, 209, 0.7);
-      margin-top: 3px;
+      margin-top: 4px;
       text-transform: uppercase;
-      letter-spacing: 0.14em;
-      text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.35);
     }
     #container.focus #phase { color: #fbbf24; }
     #container.break #phase { color: #2dd4bf; }
@@ -81,35 +81,39 @@
     }
 
     /* ── Action buttons (close + lock) — compact premium style ──
-         Visual icon is small; hit area stays 24px for easy clicking. ── */
+         Visual icon is small; hit area stays 24px for easy clicking.
+         Subtle glass morphism with warm accent on hover. ── */
     .action-btn {
       position: absolute;
       width: 24px; height: 24px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.08);
-      border: none;
-      color: rgba(255, 255, 255, 0.45);
+      background: rgba(255, 255, 255, 0.06);
+      border: 0.5px solid rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.40);
       font-size: 10px;
       line-height: 1;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.2s, background 0.2s, transform 0.15s ease;
+      transition: opacity 0.2s, background 0.2s, border-color 0.2s, transform 0.15s ease;
       z-index: 10;
     }
     .action-btn:hover {
-      background: rgba(255, 80, 80, 0.35);
-      color: rgba(255, 255, 255, 0.85);
-      transform: scale(1.08);
+      background: rgba(255, 80, 80, 0.30);
+      border-color: rgba(255, 100, 100, 0.25);
+      color: rgba(255, 255, 255, 0.90);
+      transform: scale(1.1);
     }
-    /* Lock button specific hover */
+    /* Lock button specific hover — amber accent */
     #lock-btn:hover {
-      background: rgba(245, 158, 11, 0.25);
+      background: rgba(245, 158, 11, 0.22);
+      border-color: rgba(245, 158, 11, 0.30);
       color: #fbbf24;
     }
     #lock-btn.locked:hover {
-      background: rgba(99, 160, 157, 0.25);
+      background: rgba(99, 160, 157, 0.22);
+      border-color: rgba(99, 160, 157, 0.30);
       color: #2dd4bf;
     }
 
@@ -145,23 +149,21 @@
     <div id="time">25:00</div>
     <div id="phase">Ready</div>
 
-    <!-- Close button (top-right) -->
+    <!-- Close button (top-right) — refined × with balanced stroke -->
     <button id="close-btn" class="action-btn" title="Close">
-      <!-- Simple × -->
-      <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-        <path d="M2 2l6 6M8 2L2 8"/>
+      <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <path d="M2.5 2.5l5 5M7.5 2.5l-5 5"/>
       </svg>
     </button>
 
-    <!-- Lock button (bottom-right) -->
+    <!-- Lock button (bottom-right) — minimal padlock -->
     <button id="lock-btn" class="action-btn" title="Lock floating window">
-      <!-- Unlocked padlock icon -->
-      <svg id="lock-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <!-- Unlocked state -->
-        <rect x="2.5" y="5.5" width="7" height="5.5" rx="1" />
-        <path d="M4 5.5V4a2 2 0 0 1 4 0v1.5" class="shackle-open" />
-        <!-- Hidden locked shackle (shown via JS toggle) -->
-        <path d="M4 5.5V4a2 2 0 0 1 4 0v0" class="shackle-closed" style="display:none" />
+      <svg id="lock-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Unlocked state: open shackle -->
+        <rect x="2.5" y="5.5" width="7" height="5.5" rx="1.2" />
+        <path d="M4.5 5.5V4a1.5 1.5 0 0 1 3 0v1.5" class="shackle-open" />
+        <!-- Locked shackle (hidden by default, shown via JS toggle) -->
+        <path d="M4.5 5.5V4a1.5 1.5 0 0 1 3 0v0" class="shackle-closed" style="display:none" />
       </svg>
     </button>
   </div>

@@ -290,6 +290,24 @@ export function useFloatingWindow() {
     }
   }, [])
 
+  // Sync lock state when toggled from the floating window's own lock button.
+  // Rust emits "floating-lock-changed" with the boolean; we update Zustand
+  // so SettingsPanel's Lock Floating button stays in sync.
+  useEffect(() => {
+    if (!isTauri()) return
+    let unlisten: (() => void) | undefined
+    listen<boolean>('floating-lock-changed', (event) => {
+      setLockedState(event.payload)
+    })
+      .then((u) => {
+        unlisten = u
+      })
+      .catch(() => {})
+    return () => {
+      unlisten?.()
+    }
+  }, [setLockedState])
+
   const open = useCallback(async () => {
     // ── 1. Tauri native floating window (preferred) ──
     if (isTauri()) {
