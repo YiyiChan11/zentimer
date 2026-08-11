@@ -4,13 +4,13 @@
 // ──────────────────────────────────────────────
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Download, Check, Loader2, X, AlertCircle, Sparkles } from 'lucide-react'
+import { Download, X, AlertCircle, Sparkles } from 'lucide-react'
 import { useUpdaterStore } from '@/store/updaterStore'
 import { useT } from '@/i18n/useT'
 
 export function UpdateNotification() {
   const { t } = useT()
-  const { status, updateInfo, downloadProgress, errorMsg, downloadAndInstall, dismiss } = useUpdaterStore()
+  const { status, updateInfo, errorMsg, downloadAndInstall, dismiss } = useUpdaterStore()
 
   // Only show in Tauri (desktop) environment.
   // Hide during download/installed — SettingsPanel shows its own inline progress.
@@ -64,45 +64,6 @@ export function UpdateNotification() {
                   <Download size={16} />
                   {t('updateNow')}
                 </button>
-              </motion.div>
-            )}
-
-            {/* ── Downloading ── */}
-            {status === 'downloading' && (
-              <motion.div
-                key="downloading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col gap-2"
-              >
-                <div className="flex items-center gap-3">
-                  <Loader2 size={18} className="animate-spin text-focus-400" />
-                  <span className="text-sm text-ink-200 flex-1">{t('updateDownloading')}</span>
-                  <span className="text-sm text-ink-400 tabular-nums">{downloadProgress}%</span>
-                </div>
-                <div className="h-1.5 bg-ink-100/10 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-focus-500 rounded-full"
-                    animate={{ width: `${downloadProgress}%` }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </div>
-              </motion.div>
-            )}
-
-            {/* ── Installed / restarting ── */}
-            {status === 'installed' && (
-              <motion.div
-                key="installed"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-3"
-              >
-                <Check size={18} className="text-focus-400" />
-                <span className="text-sm text-ink-200">{t('updateRestarting')}</span>
-                <Loader2 size={14} className="animate-spin text-ink-400 ml-auto" />
               </motion.div>
             )}
 
