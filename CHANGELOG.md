@@ -5,6 +5,17 @@ All notable changes to ZenTimer are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.10.3] — 2026-08-12
+
+### Fixed
+- **Micro Break layout stability** — Fixed/Random interval toggle no longer causes UI jump; both modes now show a consistent two-column grid (Fixed mode links both inputs, Random mode keeps them independent).
+- **Floating window font size** — Restored original time (28px) and phase (10px) fonts after previous over-shrink.
+- **Floating window lock sync** — Clicking the floating window's own lock button now properly syncs with the main app's "Lock Floating" button via `floating-lock-changed` Tauri event.
+
+### Changed
+- **Action button refinement** — Close/Lock icons use subtler backgrounds, 0.5px border, softer hover colors, scale(1.1) animation, balanced stroke-width for a more premium feel. Hit area remains 24×24px.
+- **NumberRow component** — Gains `disabled` prop for read-only state (used by Fixed mode's second column).
+
 ## [1.10.2] — 2026-08-12
 
 ### Fixed
@@ -83,6 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+[1.10.3]: https://github.com/YiyiChan11/zentimer/compare/v1.10.2...main
 [1.10.2]: https://github.com/YiyiChan11/zentimer/compare/v1.10.1...main
 [1.10.1]: https://github.com/YiyiChan11/zentimer/compare/v1.1.9...main
 [1.1.9]: https://github.com/YiyiChan11/zentimer/releases/tag/v1.1.9
