@@ -44,8 +44,8 @@ export const en: Record<string, string> = {
   bufferEnabledDesc: 'Multiple random short break reminders during focus (drink water / rest eyes)',
   bufferTriggerTime: 'Reminder Interval',
   bufferTriggerHint: 'Random reminder every {min}–{max} min',
+  bufferFixedInterval: 'Fixed interval',
   bufferDuration: 'Break Duration',
-  bufferDurationMode: 'Micro-break length',
   bufferCountsAsFocus: 'Count micro-break as focus',
   bufferCountsAsFocusDesc: 'When on, focus timer keeps running during micro-breaks; when off, focus pauses.',
   earliest: 'Shortest',
@@ -96,9 +96,9 @@ export const en: Record<string, string> = {
   languageEn: 'English',
 
   // Misc
-  sessionsToday: 'Today',
+  sessionsToday: 'This session',
   sessionsCount: 'sessions',
-  sessionStats: 'Today {count} sessions',
+  sessionStats: 'This session {count} sessions',
   doubleClickReturn: 'Double-click to return',
   floatingWindow: 'Floating Window',
   floatingOpen: 'Open Floating',

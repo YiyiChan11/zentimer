@@ -47,43 +47,43 @@ function computeFocusDuration(settings: Settings): number {
   return minutesToSeconds(minutes)
 }
 
-/** Compute a random buffer trigger time (in seconds) within the focus session */
+/** Compute a buffer trigger time (in seconds) within the focus session.
+ *  Fixed mode: triggers at exactly bufferMinMinute * 60.
+ *  Random mode: random between min and max. */
 function computeBufferTime(settings: Settings, focusDurationSec: number): number {
-  const minSec = settings.bufferMinMinute * 60
+  const triggerSec = settings.bufferMinMinute * 60
+  if (settings.bufferMode === 'fixed') {
+    return triggerSec < focusDurationSec - 30 ? triggerSec : -1
+  }
   const maxSec = settings.bufferMaxMinute * 60
-  // Ensure buffer doesn't happen too close to the end
   const upperBound = Math.min(maxSec, focusDurationSec - 30)
-  const lowerBound = Math.min(minSec, upperBound)
-  if (lowerBound >= upperBound) return -1 // can't place buffer
+  const lowerBound = Math.min(triggerSec, upperBound)
+  if (lowerBound >= upperBound) return -1
   return randomInt(lowerBound, upperBound)
 }
 
 /**
  * Compute the NEXT buffer trigger offset (seconds into focus) after the
- * current one. Micro breaks fire repeatedly throughout a focus session,
- * each spaced by a random interval in [min, max] minutes. Returns -1 when
- * the next one would land too close to the end of the session.
+ * current one. Micro breaks fire repeatedly throughout a focus session.
+ * Fixed mode: adds a fixed interval each time.
+ * Random mode: adds a random interval in [min, max] minutes.
  */
 function computeNextBufferTime(
   settings: Settings,
   currentOffset: number,
   focusDurationSec: number,
 ): number {
-  const minSec = settings.bufferMinMinute * 60
-  const maxSec = settings.bufferMaxMinute * 60
-  const next = currentOffset + randomInt(minSec, maxSec)
+  const addSec = settings.bufferMode === 'fixed'
+    ? settings.bufferMinMinute * 60
+    : randomInt(settings.bufferMinMinute * 60, settings.bufferMaxMinute * 60)
+  const next = currentOffset + addSec
   const upperBound = focusDurationSec - 30
-  if (next > upperBound) return -1 // no more buffers this session
+  if (next > upperBound) return -1
   return next
 }
 
-/** Compute the actual micro-break duration: fixed value or random range (seconds) */
+/** Micro-break duration is always a fixed value (seconds) */
 function computeBufferDuration(settings: Settings): number {
-  if (settings.bufferMode === 'random') {
-    const min = Math.min(settings.bufferRandomMin, settings.bufferRandomMax)
-    const max = Math.max(settings.bufferRandomMin, settings.bufferRandomMax)
-    return randomInt(min, max)
-  }
   return settings.bufferSeconds
 }
 

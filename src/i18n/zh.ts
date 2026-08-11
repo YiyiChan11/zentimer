@@ -44,8 +44,8 @@ export const zh: Record<string, string> = {
   bufferEnabledDesc: '专注中多次随机提醒短暂休息（喝水/闭目）',
   bufferTriggerTime: '提醒间隔',
   bufferTriggerHint: '每隔 {min}–{max} 分钟随机提醒一次',
+  bufferFixedInterval: '固定间隔',
   bufferDuration: '微休息时长',
-  bufferDurationMode: '微休息时长模式',
   bufferCountsAsFocus: '微休息计入专注时间',
   bufferCountsAsFocusDesc: '开启后微休息期间专注倒计时继续流逝；关闭则微休息时暂停专注。',
   earliest: '最短',
@@ -96,9 +96,9 @@ export const zh: Record<string, string> = {
   languageEn: 'English',
 
   // Misc
-  sessionsToday: '今日',
+  sessionsToday: '本次',
   sessionsCount: '轮',
-  sessionStats: '今日 {count} 轮',
+  sessionStats: '本次 {count} 轮',
   doubleClickReturn: '双击返回主窗口',
   floatingWindow: '悬浮窗',
   floatingOpen: '开启悬浮窗',

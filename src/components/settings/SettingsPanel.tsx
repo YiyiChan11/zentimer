@@ -131,41 +131,9 @@ export function SettingsPanel({ open, onClose, onNavigateDownload }: SettingsPan
                       exit={{ opacity: 0, height: 0 }}
                       className="space-y-4 pl-1"
                     >
+                      {/* ── Reminder Interval: Fixed or Random ── */}
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-ink-300">{t('bufferTriggerTime')}</span>
-                        <span className="text-ink-400 text-xs">
-                          {t('bufferTriggerHint', { min: String(settings.bufferMinMinute), max: String(settings.bufferMaxMinute) })}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <NumberRow
-                          label={t('earliest')}
-                          value={settings.bufferMinMinute}
-                          suffix={t('min')}
-                          min={1}
-                          max={15}
-                          onChange={(v) =>
-                            update({
-                              bufferMinMinute: Math.min(v, settings.bufferMaxMinute - 1),
-                            })
-                          }
-                        />
-                        <NumberRow
-                          label={t('latest')}
-                          value={settings.bufferMaxMinute}
-                          suffix={t('min')}
-                          min={3}
-                          max={30}
-                          onChange={(v) =>
-                            update({
-                              bufferMaxMinute: Math.max(v, settings.bufferMinMinute + 1),
-                            })
-                          }
-                        />
-                      </div>
-                      {/* Micro-break length: fixed or random */}
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-ink-300">{t('bufferDurationMode')}</span>
                       </div>
                       <div className="flex gap-2 p-1 rounded-xl glass">
                         <button
@@ -189,43 +157,60 @@ export function SettingsPanel({ open, onClose, onNavigateDownload }: SettingsPan
                           {t('randomTime')}
                         </button>
                       </div>
+
+                      {/* Interval inputs */}
                       {settings.bufferMode === 'fixed' ? (
                         <NumberRow
-                          label={t('bufferDuration')}
-                          value={settings.bufferSeconds}
-                          suffix="秒"
-                          min={5}
-                          max={60}
-                          onChange={(v) => update({ bufferSeconds: v })}
+                          label={t('bufferFixedInterval')}
+                          value={settings.bufferMinMinute}
+                          suffix={t('min')}
+                          min={1}
+                          max={30}
+                          onChange={(v) => update({ bufferMinMinute: v, bufferMaxMinute: v })}
                         />
                       ) : (
-                        <div className="grid grid-cols-2 gap-3">
-                          <NumberRow
-                            label={t('earliest')}
-                            value={settings.bufferRandomMin}
-                            suffix="秒"
-                            min={5}
-                            max={60}
-                            onChange={(v) =>
-                              update({
-                                bufferRandomMin: Math.min(v, settings.bufferRandomMax - 1),
-                              })
-                            }
-                          />
-                          <NumberRow
-                            label={t('latest')}
-                            value={settings.bufferRandomMax}
-                            suffix="秒"
-                            min={5}
-                            max={120}
-                            onChange={(v) =>
-                              update({
-                                bufferRandomMax: Math.max(v, settings.bufferRandomMin + 1),
-                              })
-                            }
-                          />
-                        </div>
+                        <>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-ink-500">{t('bufferTriggerHint', { min: String(settings.bufferMinMinute), max: String(settings.bufferMaxMinute) })}</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <NumberRow
+                              label={t('earliest')}
+                              value={settings.bufferMinMinute}
+                              suffix={t('min')}
+                              min={1}
+                              max={15}
+                              onChange={(v) =>
+                                update({
+                                  bufferMinMinute: Math.min(v, settings.bufferMaxMinute - 1),
+                                })
+                              }
+                            />
+                            <NumberRow
+                              label={t('latest')}
+                              value={settings.bufferMaxMinute}
+                              suffix={t('min')}
+                              min={3}
+                              max={30}
+                              onChange={(v) =>
+                                update({
+                                  bufferMaxMinute: Math.max(v, settings.bufferMinMinute + 1),
+                                })
+                              }
+                            />
+                          </div>
+                        </>
                       )}
+
+                      {/* ── Micro-break duration (always fixed) ── */}
+                      <NumberRow
+                        label={t('bufferDuration')}
+                        value={settings.bufferSeconds}
+                        suffix="秒"
+                        min={5}
+                        max={60}
+                        onChange={(v) => update({ bufferSeconds: v })}
+                      />
 
                       {/* Micro-break counts as focus time */}
                       <ToggleRow
@@ -323,28 +308,26 @@ export function SettingsPanel({ open, onClose, onNavigateDownload }: SettingsPan
                     <span className="text-ink-300">{t('currentVersion')}</span>
                     <span className="text-ink-400 text-xs tabular">v{updater.currentVersion || '—'}</span>
                   </div>
-                  <button
-                    onClick={() => updater.checkForUpdates()}
-                    disabled={updater.status === 'checking' || updater.status === 'downloading'}
-                    className="w-full py-2.5 rounded-xl text-sm font-medium transition-all glass text-ink-300 hover:text-ink-100 hover:bg-white/5 disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {updater.status === 'checking' ? (
-                      <>
-                        <Loader2 size={16} className="animate-spin" />
-                        {t('updateChecking')}
-                      </>
-                    ) : updater.status === 'downloading' ? (
-                      <>
-                        <Loader2 size={16} className="animate-spin" />
-                        {t('updateDownloading')}
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw size={16} />
-                        {t('checkUpdate')}
-                      </>
-                    )}
-                  </button>
+                  {/* Hide check button during download/installed — the progress card below is sufficient */}
+                  {updater.status !== 'downloading' && updater.status !== 'installed' && (
+                    <button
+                      onClick={() => updater.checkForUpdates()}
+                      disabled={updater.status === 'checking'}
+                      className="w-full py-2.5 rounded-xl text-sm font-medium transition-all glass text-ink-300 hover:text-ink-100 hover:bg-white/5 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {updater.status === 'checking' ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          {t('updateChecking')}
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw size={16} />
+                          {t('checkUpdate')}
+                        </>
+                      )}
+                    </button>
+                  )}
 
                   {/* ═══ Full update status card — always block-level below check button ═══ */}
                   <AnimatePresence mode="wait">
