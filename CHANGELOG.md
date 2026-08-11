@@ -5,6 +5,17 @@ All notable changes to ZenTimer are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.10.2] — 2026-08-12
+
+### Fixed
+- **Duplicate update window** — Removed the redundant top floating "Downloading update…" overlay; download progress now shows only in the Settings panel card.
+- **Micro-break interval semantics** — The Fixed/Random control now sets the reminder *interval* (when a micro-break is triggered) instead of the break length; defaults to Random and remembers the last choice.
+- **SessionStats label** — "Today N sessions" changed to "This session N sessions" (「今日」→「本次」) in both zh/en.
+
+### Changed
+- **Floating window polish** — Smaller, more refined time/phase text and action icons (hit area unchanged) for a premium feel.
+- **Click-through when locked** — When the floating window is locked, mouse clicks pass through to content behind it (`WS_EX_TRANSPARENT`); unlock only from the main app.
+
 ## [1.10.1] — 2026-08-12
 
 ### Added
@@ -72,5 +83,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+[1.10.2]: https://github.com/YiyiChan11/zentimer/compare/v1.10.1...main
 [1.10.1]: https://github.com/YiyiChan11/zentimer/compare/v1.1.9...main
 [1.1.9]: https://github.com/YiyiChan11/zentimer/releases/tag/v1.1.9
