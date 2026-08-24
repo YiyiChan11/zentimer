@@ -90,18 +90,18 @@ export function TimeSelector() {
                 <RangeSlider
                   label={t('earliest')}
                   value={settings.randomMin}
-                  min={5}
-                  max={90}
-                  step={5}
-                  onChange={(v) => update({ randomMin: Math.min(v, settings.randomMax - 5) })}
+                  min={1}
+                  max={150}
+                  step={1}
+                  onChange={(v) => update({ randomMin: Math.min(v, settings.randomMax - 1) })}
                 />
                 <RangeSlider
                   label={t('latest')}
                   value={settings.randomMax}
-                  min={5}
-                  max={90}
-                  step={5}
-                  onChange={(v) => update({ randomMax: Math.max(v, settings.randomMin + 5) })}
+                  min={1}
+                  max={150}
+                  step={1}
+                  onChange={(v) => update({ randomMax: Math.max(v, settings.randomMin + 1) })}
                 />
               </div>
             </motion.div>

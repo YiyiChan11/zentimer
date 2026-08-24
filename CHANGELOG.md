@@ -5,6 +5,12 @@ All notable changes to ZenTimer are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.10.4] — 2026-08-24
+
+### Changed
+- **Focus time slider — per-minute precision** — Fixed mode slider now steps by 1 minute (previously snapped to 5-min multiples); range 1–150 min.
+- **Max focus duration raised to 150 min** — Both Fixed and Random modes now allow up to 150 min (previously capped at 90 min).
+
 ## [1.10.3] — 2026-08-12
 
 ### Fixed
@@ -94,6 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+[1.10.4]: https://github.com/YiyiChan11/zentimer/compare/v1.10.3...main
 [1.10.3]: https://github.com/YiyiChan11/zentimer/compare/v1.10.2...main
 [1.10.2]: https://github.com/YiyiChan11/zentimer/compare/v1.10.1...main
 [1.10.1]: https://github.com/YiyiChan11/zentimer/compare/v1.1.9...main

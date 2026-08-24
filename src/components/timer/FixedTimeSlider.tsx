@@ -39,14 +39,14 @@ export function FixedTimeSlider() {
       {/* Slider with fixed range labels */}
       <div>
         <div className="flex justify-between mb-2">
-          <span className="text-xs text-ink-400">5 {t('min')}</span>
-          <span className="text-xs text-ink-400">90 {t('min')}</span>
+          <span className="text-xs text-ink-400">1 {t('min')}</span>
+          <span className="text-xs text-ink-400">150 {t('min')}</span>
         </div>
         <input
           type="range"
-          min={5}
-          max={90}
-          step={5}
+          min={1}
+          max={150}
+          step={1}
           value={value}
           onChange={(e) => handleChange(Number(e.target.value))}
           className="w-full accent-focus-500"
@@ -56,7 +56,7 @@ export function FixedTimeSlider() {
       {/* Quick-select chips */}
       <div className="flex items-center justify-center gap-2">
         <button
-          onClick={() => handleChange(Math.max(5, value - 5))}
+          onClick={() => handleChange(Math.max(1, value - 1))}
           className="w-8 h-8 rounded-lg glass flex items-center justify-center text-ink-400 hover:text-ink-100 transition-all text-sm"
         >
           −
@@ -77,7 +77,7 @@ export function FixedTimeSlider() {
           ))}
         </div>
         <button
-          onClick={() => handleChange(Math.min(90, value + 5))}
+          onClick={() => handleChange(Math.min(150, value + 1))}
           className="w-8 h-8 rounded-lg glass flex items-center justify-center text-ink-400 hover:text-ink-100 transition-all text-sm"
         >
           +

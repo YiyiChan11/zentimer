@@ -109,7 +109,7 @@ export const en: Record<string, string> = {
   floatingHint: 'Show mini timer in screen corner',
   keyboardHint: 'Space to start/pause · Esc to reset',
   quote: '"Stillness leads to peace, peace leads to clarity, clarity leads to result."',
-  version: 'v1.10.3 · ZenTimer',
+  version: 'v1.10.4 · ZenTimer',
 
   // Auto-update
   updateAvailable: 'Update available',

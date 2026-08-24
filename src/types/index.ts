@@ -18,11 +18,11 @@ export type Locale = 'zh' | 'en'
 export interface Settings {
   /** Selection mode: fixed time or random range */
   selectionMode: SelectionMode
-  /** Fixed duration in minutes (5–90, step 5) */
+  /** Fixed duration in minutes (1–150, step 1) */
   fixedDuration: number
-  /** Random range minimum in minutes */
+  /** Random range minimum in minutes (1–150, step 1) */
   randomMin: number
-  /** Random range maximum in minutes */
+  /** Random range maximum in minutes (1–150, step 1) */
   randomMax: number
   /** Break duration in minutes (default 10) */
   breakDuration: number
