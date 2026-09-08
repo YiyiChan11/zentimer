@@ -308,6 +308,38 @@ export function useFloatingWindow() {
     }
   }, [setLockedState])
 
+  // Reset timer from floating window's Reset button
+  useEffect(() => {
+    if (!isTauri()) return
+    let unlisten: (() => void) | undefined
+    listen('floating-reset', () => {
+      useTimerStore.getState().reset()
+    })
+      .then((u) => {
+        unlisten = u
+      })
+      .catch(() => {})
+    return () => {
+      unlisten?.()
+    }
+  }, [])
+
+  // Skip current session from floating window's Skip button
+  useEffect(() => {
+    if (!isTauri()) return
+    let unlisten: (() => void) | undefined
+    listen('floating-skip', () => {
+      useTimerStore.getState().skip()
+    })
+      .then((u) => {
+        unlisten = u
+      })
+      .catch(() => {})
+    return () => {
+      unlisten?.()
+    }
+  }, [])
+
   const open = useCallback(async () => {
     // ── 1. Tauri native floating window (preferred) ──
     if (isTauri()) {

@@ -94,6 +94,8 @@ pub fn run() {
             commands::floating_show_main,
             commands::set_floating_opacity,
             commands::set_floating_locked,
+            commands::floating_reset_timer,
+            commands::floating_skip_timer,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

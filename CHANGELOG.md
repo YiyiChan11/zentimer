@@ -5,6 +5,15 @@ All notable changes to ZenTimer are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.10.5] — 2026-09-08
+
+### Added
+- **Floating window Reset button** — Top-left corner; resets timer to idle state (counter-clockwise arrow icon, cool gray hover).
+- **Floating window Skip button** — Bottom-left corner; skips current focus/break session (double-chevron-right icon, teal hover).
+
+### Changed
+- **Four-corner action layout** — Floating window now has a symmetric 2×2 button grid: Reset (top-left) / Close (top-right) / Skip (bottom-left) / Lock (bottom-right). All buttons share the same premium glass style with unique accent colors on hover.
+
 ## [1.10.4] — 2026-08-24
 
 ### Changed
@@ -100,6 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+[1.10.5]: https://github.com/YiyiChan11/zentimer/compare/v1.10.4...main
 [1.10.4]: https://github.com/YiyiChan11/zentimer/compare/v1.10.3...main
 [1.10.3]: https://github.com/YiyiChan11/zentimer/compare/v1.10.2...main
 [1.10.2]: https://github.com/YiyiChan11/zentimer/compare/v1.10.1...main

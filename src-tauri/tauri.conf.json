@@ -1,6 +1,6 @@
 {
     "productName":  "ZenTimer",
-    "version":  "1.10.4",
+    "version":  "1.10.5",
     "identifier":  "com.zentimer.app",
     "build":  {
                   "beforeDevCommand":  "npm run dev",

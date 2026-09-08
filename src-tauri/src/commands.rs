@@ -170,6 +170,22 @@ pub async fn floating_show_main(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// Reset the timer to idle state — called from floating window's Reset button.
+/// Emits an event so the main window's timerStore.reset() is invoked.
+#[tauri::command]
+pub async fn floating_reset_timer(app: AppHandle) -> Result<(), String> {
+    app.emit("floating-reset", ()).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Skip the current focus/break session — called from floating window's Skip button.
+/// Emits an event so the main window's timerStore.skip() is invoked.
+#[tauri::command]
+pub async fn floating_skip_timer(app: AppHandle) -> Result<(), String> {
+    app.emit("floating-skip", ()).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 /// Lock or unlock the floating window's interactivity.
 /// When locked:
 ///   - CSS pointer-events disabled (no drag/click/tap inside webview)

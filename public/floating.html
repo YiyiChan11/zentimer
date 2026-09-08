@@ -117,18 +117,42 @@
       color: #2dd4bf;
     }
 
+    /* Reset button — cool gray/blue accent */
+    #reset-btn:hover {
+      background: rgba(148, 163, 184, 0.22);
+      border-color: rgba(148, 163, 184, 0.30);
+      color: #94a3b8;
+    }
+
+    /* Skip button — teal accent */
+    #skip-btn:hover {
+      background: rgba(45, 212, 191, 0.20);
+      border-color: rgba(45, 212, 191, 0.28);
+      color: #2dd4bf;
+    }
+
     #close-btn {
       top: 3px; right: 3px;
     }
     #lock-btn {
       bottom: 3px; right: 3px;
     }
+    #reset-btn {
+      top: 3px; left: 3px;
+    }
+    #skip-btn {
+      bottom: 3px; left: 3px;
+    }
     #container:not(:hover) #close-btn,
-    #container:not(:hover) #lock-btn {
+    #container:not(:hover) #lock-btn,
+    #container:not(:hover) #reset-btn,
+    #container:not(:hover) #skip-btn {
       opacity: 0;
     }
     #container:hover #close-btn,
-    #container:hover #lock-btn {
+    #container:hover #lock-btn,
+    #container:hover #reset-btn,
+    #container:hover #skip-btn {
       opacity: 1;
     }
 
@@ -166,6 +190,22 @@
         <path d="M4.5 5.5V4a1.5 1.5 0 0 1 3 0v0" class="shackle-closed" style="display:none" />
       </svg>
     </button>
+
+    <!-- Reset button (top-left) — counter-clockwise arrow -->
+    <button id="reset-btn" class="action-btn" title="Reset timer">
+      <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6.5 1.5A4 4 0 1 0 9 5"/>
+        <path d="M6.5 1.5V3.5H8.5"/>
+      </svg>
+    </button>
+
+    <!-- Skip button (bottom-left) — skip forward -->
+    <button id="skip-btn" class="action-btn" title="Skip session">
+      <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 2L5 5L1 8"/>
+        <path d="M5 2L9 5L5 8"/>
+      </svg>
+    </button>
   </div>
 
   <script>
@@ -176,6 +216,8 @@
     var progressBar = document.getElementById('progress-bar');
     var closeBtn = document.getElementById('close-btn');
     var lockBtn = document.getElementById('lock-btn');
+    var resetBtn = document.getElementById('reset-btn');
+    var skipBtn = document.getElementById('skip-btn');
     var lockIconShackleOpen = lockBtn.querySelector('.shackle-open');
     var lockIconShackleClosed = lockBtn.querySelector('.shackle-closed');
 
@@ -307,7 +349,8 @@
 
     container.addEventListener('pointerdown', function(e) {
       if (isLocked()) return;
-      if (e.target === closeBtn || e.target === lockBtn) return;
+      if (e.target === closeBtn || e.target === lockBtn ||
+          e.target === resetBtn || e.target === skipBtn) return;
       pressInfo = { x: e.clientX, y: e.clientY };
       moved = false;
       var timer = setTimeout(function() {
@@ -357,6 +400,18 @@
     closeBtn.addEventListener('click', function(e) {
       e.stopPropagation();
       invoke('close_floating_window').catch(function(){});
+    });
+
+    // ── Reset button (reset timer to idle) ──
+    resetBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      invoke('floating_reset_timer').catch(function(){});
+    });
+
+    // ── Skip button (skip current session) ──
+    skipBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      invoke('floating_skip_timer').catch(function(){});
     });
   </script>
 </body>
