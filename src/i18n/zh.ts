@@ -109,7 +109,7 @@ export const zh: Record<string, string> = {
   floatingHint: '在屏幕角落显示迷你计时器',
   keyboardHint: '空格 开始/暂停 · Esc 重置',
   quote: '「静而后能安，安而后能虑，虑而后能得。」',
-  version: 'v1.10.5 · 禅意番茄钟',
+  version: 'v1.10.6 · 禅意番茄钟',
 
   // Auto-update
   updateAvailable: '发现新版本',

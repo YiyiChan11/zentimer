@@ -5,6 +5,16 @@ All notable changes to ZenTimer are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.10.6] — 2026-09-20
+
+### Fixed
+- **Floating Reset button restarted the timer** — Pressing Reset reset the timer to idle, but a stray "single tap" from the drag/tap gesture fired ~280 ms later and immediately restarted the countdown. The press guard compared `e.target` against the button element by identity, which fails when the click lands on the button's inner `<svg>`/`<path>` — so the container's tap logic ran anyway. The guard now uses `closest('.action-btn')`, plus a second safety net on `pointerup`. Reset now stays stopped, matching the main app.
+- **Floating Skip button was immediately paused** — Same root cause: after Skip advanced the phase, the stray tap toggled the timer back to paused. Skip now behaves identically to the main app's Skip (`focus → break`, `break/buffer → next focus or idle`).
+- **Long-press on an action button started window dragging** — Same guard fix; pressing and holding a corner button no longer begins a window drag.
+
+### Changed
+- **Floating icon consistency** — Reset and Skip icons redrawn to match the main app's lucide equivalents (`RotateCcw` ↺ and `SkipForward` ▷|) instead of the previous ad-hoc shapes.
+
 ## [1.10.5] — 2026-09-08
 
 ### Added
@@ -109,6 +119,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+[1.10.6]: https://github.com/YiyiChan11/zentimer/compare/v1.10.5...main
 [1.10.5]: https://github.com/YiyiChan11/zentimer/compare/v1.10.4...main
 [1.10.4]: https://github.com/YiyiChan11/zentimer/compare/v1.10.3...main
 [1.10.3]: https://github.com/YiyiChan11/zentimer/compare/v1.10.2...main

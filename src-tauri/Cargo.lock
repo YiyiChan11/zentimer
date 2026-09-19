@@ -5283,7 +5283,7 @@ dependencies = [
 
 [[package]]
 name = "zentimer"
-version = "1.10.5"
+version = "1.10.6"
 dependencies = [
  "serde",
  "serde_json",

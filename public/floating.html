@@ -191,19 +191,19 @@
       </svg>
     </button>
 
-    <!-- Reset button (top-left) — counter-clockwise arrow -->
+    <!-- Reset button (top-left) — same ↺ icon as the main app's Reset -->
     <button id="reset-btn" class="action-btn" title="Reset timer">
-      <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M6.5 1.5A4 4 0 1 0 9 5"/>
-        <path d="M6.5 1.5V3.5H8.5"/>
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1.5 6a4.5 4.5 0 1 0 4.5-4.5 4.875 4.875 0 0 0-3.37 1.37L1.5 4"/>
+        <path d="M1.5 1.5v2.5h2.5"/>
       </svg>
     </button>
 
-    <!-- Skip button (bottom-left) — skip forward -->
+    <!-- Skip button (bottom-left) — same ▷| icon as the main app's Skip -->
     <button id="skip-btn" class="action-btn" title="Skip session">
-      <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M1 2L5 5L1 8"/>
-        <path d="M5 2L9 5L5 8"/>
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2.5 2L7.5 6L2.5 10Z"/>
+        <path d="M9.5 2.5v7"/>
       </svg>
     </button>
   </div>
@@ -349,8 +349,11 @@
 
     container.addEventListener('pointerdown', function(e) {
       if (isLocked()) return;
-      if (e.target === closeBtn || e.target === lockBtn ||
-          e.target === resetBtn || e.target === skipBtn) return;
+      // Ignore presses that land on any action button (or its inner SVG/path).
+      // Using closest() is essential: e.target is the <svg>/<path> when the
+      // user clicks the icon itself, so strict equality would leak the press
+      // into the drag/tap logic below and fire a stray floating-toggle.
+      if (e.target && e.target.closest && e.target.closest('.action-btn')) return;
       pressInfo = { x: e.clientX, y: e.clientY };
       moved = false;
       var timer = setTimeout(function() {
@@ -370,13 +373,21 @@
       }
     });
 
-    function endPress() {
+    function endPress(e) {
       if (!pressInfo) return;
       clearTimeout(pressInfo.longTimer);
       var wasDragging = dragging;
       dragging = false;
       pressInfo = null;
       if (wasDragging || moved || isLocked()) return;
+      // Second safety net: never turn a release over an action button into a
+      // tap (which would fire floating_toggle_timer and restart/pause the
+      // timer right after Reset/Skip/Close was pressed).
+      if (e && e.target && e.target.closest && e.target.closest('.action-btn')) {
+        lastTap = 0;
+        if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; }
+        return;
+      }
 
       var now = Date.now();
       if (now - lastTap < DOUBLE_TAP_MS) {
