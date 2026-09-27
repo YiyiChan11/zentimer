@@ -93,6 +93,7 @@ pub fn run() {
             commands::floating_toggle_timer,
             commands::floating_show_main,
             commands::set_floating_opacity,
+            commands::get_floating_opacity,
             commands::set_floating_locked,
             commands::floating_reset_timer,
             commands::floating_skip_timer,

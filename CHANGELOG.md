@@ -5,6 +5,12 @@ All notable changes to ZenTimer are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.10.10] — 2026-09-28
+
+### Fixed
+- **Floating window looked different after being closed and reopened** — the two-layer opacity system has a Win32 half (window alpha) and a CSS half (container background / text, applied by `window.eval`). On the *first* open the eval fires before floating.html has loaded, so it was silently dropped and the page fell back to its hardcoded `setOpacityLevel(1.0)`: the container rendered at full strength. On every reopen the page was already alive, so the real setting applied and the window looked noticeably more transparent. The selected opacity is now stored on the Rust side and the page pulls it via a new `get_floating_opacity` command as soon as it loads, so the first open and every later reopen are identical.
+- **Opacity 0% turned the floating window white** — the digits' white glow was *inverted*: `glowA = 0.7 - raw * 0.15`, so it grew to 0.70 exactly as the dark container background faded to 0.08. With the frame gone, all that remained was a bright white halo. The glow now scales with the window (`0.12 + raw * 0.48`), so every element fades together.
+
 ## [1.10.9] — 2026-09-27
 
 ### Fixed
@@ -137,6 +143,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+[1.10.10]: https://github.com/YiyiChan11/zentimer/compare/v1.10.9...main
 [1.10.9]: https://github.com/YiyiChan11/zentimer/compare/v1.10.8...main
 [1.10.8]: https://github.com/YiyiChan11/zentimer/compare/v1.10.7...main
 [1.10.7]: https://github.com/YiyiChan11/zentimer/compare/v1.10.6...main

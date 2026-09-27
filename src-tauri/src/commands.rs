@@ -2,7 +2,17 @@
 // Tauri IPC Commands
 // ──────────────────────────────────────────────
 
+use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
+
+/// Last opacity the user selected (0.0–1.0), kept on the Rust side.
+///
+/// The CSS half of the two-layer opacity system is applied by `window.eval`,
+/// which is silently dropped when it fires before floating.html has finished
+/// loading — i.e. on the very first open. The freshly loaded page therefore
+/// pulls this value itself (see `get_floating_opacity`) so the first open and
+/// every later reopen look identical.
+static FLOATING_OPACITY: Mutex<f64> = Mutex::new(1.0);
 
 /// Show the native floating window (always-on-top, small, borderless)
 #[tauri::command]
@@ -125,6 +135,11 @@ pub async fn floating_toggle_timer(app: AppHandle) -> Result<(), String> {
 pub async fn set_floating_opacity(app: AppHandle, opacity: f64) -> Result<(), String> {
     let raw = opacity.clamp(0.0, 1.0);
 
+    // Remember it so a freshly loaded floating window can pull it later
+    if let Ok(mut stored) = FLOATING_OPACITY.lock() {
+        *stored = raw;
+    }
+
     // ── Layer 1: Win32 window alpha ──
     // Map [0, 1] → [0.15, 1.0]: even at "0%" the window retains
     // enough alpha that white text (~90% CSS opacity) reads as ~13-14%
@@ -165,9 +180,20 @@ pub async fn set_floating_opacity(app: AppHandle, opacity: f64) -> Result<(), St
     #[cfg(not(windows))]
     {
         // Non-Windows targets: no-op (floating window is Windows-only for now)
-        let _ = (&app, clamped);
+        let _ = (&app, raw);
     }
     Ok(())
+}
+
+/// Read back the last opacity the user selected (0.0–1.0).
+///
+/// Called by floating.html right after it loads. Without this the page fell
+/// back to its hardcoded `setOpacityLevel(1.0)`, so the first open showed the
+/// container at full strength while every reopen applied the real setting —
+/// the "colour looks different after reopening" bug.
+#[tauri::command]
+pub fn get_floating_opacity() -> f64 {
+    FLOATING_OPACITY.lock().map(|g| *g).unwrap_or(1.0)
 }
 
 /// Bring the main window to the front when the floating window is double-tapped.

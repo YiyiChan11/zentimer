@@ -235,7 +235,11 @@
       var timeOp = (0.90 + _currentRaw * 0.10).toFixed(2);
       var phaseOp = (0.65 + _currentRaw * 0.35).toFixed(2);
 
-      var glowA = (0.7 - _currentRaw * 0.15).toFixed(2);
+      // Glow used to *increase* as the window faded (0.70 at raw = 0) while the
+      // dark container background dropped to 0.08, so once the frame was gone
+      // what remained was a bright white halo — "opacity 0 turns very white".
+      // It now scales with the window so every element fades together.
+      var glowA = (0.12 + _currentRaw * 0.48).toFixed(2);
 
       container.style.background = 'rgba(18, 18, 22, ' + bgAlpha + ')';
       container.style.borderColor = 'rgba(255, 255, 255, ' + borderAlpha + ')';
@@ -249,8 +253,23 @@
       phaseEl.style.opacity = phaseOp;
     };
 
-    // Initialise to full opacity (default)
-    setOpacityLevel(1.0);
+    // ── Initial opacity ──
+    // Pull the saved value from Rust instead of hardcoding 1.0. The backend's
+    // window.eval that normally pushes this value is dropped when it fires
+    // before this page has loaded — i.e. on the very first open — which left
+    // the container at full strength then and correctly dimmed on every
+    // reopen. That is the "looks different after reopening" bug.
+    (function applySavedOpacity() {
+      try {
+        invoke('get_floating_opacity').then(function (v) {
+          setOpacityLevel(typeof v === 'number' ? v : 1.0);
+        }).catch(function () {
+          setOpacityLevel(1.0);
+        });
+      } catch (e) {
+        setOpacityLevel(1.0);
+      }
+    })();
 
     // ── Lock/Unlock state ──
     // When locked: container gets pointer-events:none (no drag/click/tap).

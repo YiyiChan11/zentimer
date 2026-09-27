@@ -1,6 +1,6 @@
 [package]
 name = "zentimer"
-version = "1.10.9"
+version = "1.10.10"
 description = "ZenTimer — 禅意番茄钟"
 authors = ["YIYI"]
 edition = "2021"
