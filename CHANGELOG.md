@@ -5,6 +5,14 @@ All notable changes to ZenTimer are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.10.9] — 2026-09-27
+
+### Fixed
+- **Floating window came back locked after being closed and reopened** — the floating window is only ever *hidden*, never destroyed, so both the Win32 `WS_EX_TRANSPARENT` ex-style (click-through) and the webview's internal `_locked` flag survived a close → reopen cycle. Reopening therefore gave you a window you could not drag or click, and the settings button still read "Unlock Floating". `show` / `hide` / `close` now all force the window back to unlocked via a shared `apply_floating_lock` helper, so every open starts draggable and the lock is never carried over.
+
+### Changed
+- **No more duplicate update card** — the floating "Update available" toast is now suppressed while the settings drawer is open. Both were rendering the same information, and because the toast is `fixed` and centred it landed on top of the drawer and covered the controls underneath. The toast still appears for the silent startup check, when the drawer is closed and there is no other way to notice an update.
+
 ## [1.10.8] — 2026-09-27
 
 ### Fixed
@@ -129,6 +137,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+[1.10.9]: https://github.com/YiyiChan11/zentimer/compare/v1.10.8...main
 [1.10.8]: https://github.com/YiyiChan11/zentimer/compare/v1.10.7...main
 [1.10.7]: https://github.com/YiyiChan11/zentimer/compare/v1.10.6...main
 [1.10.6]: https://github.com/YiyiChan11/zentimer/compare/v1.10.5...main

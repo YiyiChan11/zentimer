@@ -11,6 +11,9 @@ pub async fn show_floating_window(app: AppHandle) -> Result<(), String> {
     if app.get_webview_window("floating").is_some() {
         let win = app.get_webview_window("floating").unwrap();
         win.show().map_err(|e| e.to_string())?;
+        // The window object outlives a close (we only hide it), so it may still
+        // be click-through from a previous lock. Every open starts unlocked.
+        apply_floating_lock(&app, false);
         return Ok(());
     }
 
@@ -31,6 +34,10 @@ pub async fn show_floating_window(app: AppHandle) -> Result<(), String> {
     .build()
     .map_err(|e| e.to_string())?;
 
+    // A brand-new window is unlocked by default, but keep the main app's lock
+    // button honest in case a stale `isLocked` is still in the store.
+    apply_floating_lock(&app, false);
+
     Ok(())
 }
 
@@ -40,6 +47,8 @@ pub async fn hide_floating_window(app: AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("floating") {
         window.hide().map_err(|e| e.to_string())?;
     }
+    // Closing always drops the lock, so the next open is draggable again
+    apply_floating_lock(&app, false);
     // Notify the main window so its toggle button reflects the closed state
     let _ = app.emit("floating-closed", ());
     Ok(())
@@ -51,6 +60,8 @@ pub async fn close_floating_window(app: AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("floating") {
         window.hide().map_err(|e| e.to_string())?;
     }
+    // Closing always drops the lock, so the next open is draggable again
+    apply_floating_lock(&app, false);
     // Notify the main window so its toggle button reflects the closed state
     let _ = app.emit("floating-closed", ());
     Ok(())
@@ -186,25 +197,25 @@ pub async fn floating_skip_timer(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// Lock or unlock the floating window's interactivity.
-/// When locked:
-///   - CSS pointer-events disabled (no drag/click/tap inside webview)
-///   - Win32 WS_EX_TRANSPARENT set (mouse clicks pass through to windows behind)
-///   - Unlock must be done from the main app settings panel.
-/// When unlocked:
-///   - WS_EX_TRANSPARENT removed, window accepts input again
+/// Apply the lock (click-through) state to the floating window.
 ///
-/// Emits "floating-lock-changed" so the main app's Zustand store stays in sync
-/// when the lock is toggled from the floating window's own button.
-#[tauri::command]
-pub async fn set_floating_locked(app: AppHandle, locked: bool) -> Result<(), String> {
+/// Extracted from `set_floating_locked` because the window lifecycle has to
+/// force an unlock as well: the floating window is only ever *hidden*, never
+/// destroyed, so both the Win32 `WS_EX_TRANSPARENT` ex-style and the webview's
+/// internal `_locked` flag survive a close → reopen cycle. Without clearing
+/// them on show/hide, the window comes back locked and cannot be dragged.
+///
+/// Emits "floating-lock-changed" so the main app's Zustand store stays in sync.
+fn apply_floating_lock(app: &AppHandle, locked: bool) {
     // Notify the main window so its Lock Floating button reflects the new state
     let _ = app.emit("floating-lock-changed", locked);
 
     if let Some(window) = app.get_webview_window("floating") {
         // ── Tell HTML to toggle its locked state (CSS + interaction guards) ──
+        // Ignore failures: a freshly-built window may not have a live document
+        // yet, in which case its default `_locked = false` is already correct.
         let js = format!("if(window.setLockedState)window.setLockedState({})", locked);
-        window.eval(&js).map_err(|e| e.to_string())?;
+        let _ = window.eval(&js);
 
         // ── Win32 click-through: toggle WS_EX_TRANSPARENT ──
         #[cfg(windows)]
@@ -218,24 +229,29 @@ pub async fn set_floating_locked(app: AppHandle, locked: bool) -> Result<(), Str
                     let ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
                     // Ensure WS_EX_LAYERED is always set (required for transparency)
                     let layered = ex | WS_EX_LAYERED.0 as isize;
-                    if locked {
+                    let next = if locked {
                         // Add transparent flag → clicks pass through
-                        SetWindowLongPtrW(
-                            hwnd,
-                            GWL_EXSTYLE,
-                            layered | WS_EX_TRANSPARENT.0 as isize,
-                        );
+                        layered | WS_EX_TRANSPARENT.0 as isize
                     } else {
                         // Remove transparent flag → window accepts clicks again
-                        SetWindowLongPtrW(
-                            hwnd,
-                            GWL_EXSTYLE,
-                            layered & !(WS_EX_TRANSPARENT.0 as isize),
-                        );
-                    }
+                        layered & !(WS_EX_TRANSPARENT.0 as isize)
+                    };
+                    SetWindowLongPtrW(hwnd, GWL_EXSTYLE, next);
                 }
             }
         }
     }
+}
+
+/// Lock or unlock the floating window's interactivity.
+/// When locked:
+///   - CSS pointer-events disabled (no drag/click/tap inside webview)
+///   - Win32 WS_EX_TRANSPARENT set (mouse clicks pass through to windows behind)
+///   - Unlock must be done from the main app settings panel.
+/// When unlocked:
+///   - WS_EX_TRANSPARENT removed, window accepts input again
+#[tauri::command]
+pub async fn set_floating_locked(app: AppHandle, locked: bool) -> Result<(), String> {
+    apply_floating_lock(&app, locked);
     Ok(())
 }

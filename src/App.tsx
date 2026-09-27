@@ -263,8 +263,9 @@ function App() {
       {/* Settings panel */}
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} onNavigateDownload={() => setView('download')} />
 
-      {/* Auto-update notification */}
-      <UpdateNotification />
+      {/* Auto-update notification (suppressed while the settings drawer is open —
+          the drawer's Update section already shows the same card inline) */}
+      <UpdateNotification hidden={settingsOpen} />
     </div>
   )
 }

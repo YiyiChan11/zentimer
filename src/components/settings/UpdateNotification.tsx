@@ -8,12 +8,24 @@ import { Download, X, AlertCircle, Sparkles } from 'lucide-react'
 import { useUpdaterStore } from '@/store/updaterStore'
 import { useT } from '@/i18n/useT'
 
-export function UpdateNotification() {
+interface UpdateNotificationProps {
+  /**
+   * Suppress the toast while the settings drawer is open. The drawer renders
+   * its own inline update card, so showing both means the floating toast lands
+   * on top of the drawer (it is `fixed` + centred) and hides the controls
+   * underneath. The toast is still useful for the silent startup check, when
+   * the drawer is closed and there is no other way to learn about an update.
+   */
+  hidden?: boolean
+}
+
+export function UpdateNotification({ hidden = false }: UpdateNotificationProps) {
   const { t } = useT()
   const { status, updateInfo, errorMsg, downloadAndInstall, dismiss } = useUpdaterStore()
 
   // Only show in Tauri (desktop) environment.
   // Hide during download/installed — SettingsPanel shows its own inline progress.
+  if (hidden) return null
   if (status === 'idle' || status === 'checking' || status === 'not-available' || status === 'downloading' || status === 'installed') return null
 
   return (

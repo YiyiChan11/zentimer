@@ -327,6 +327,8 @@ export function useFloatingWindow() {
         const opacity = useSettingsStore.getState().settings.floatingOpacity
         await setFloatingOpacity(opacity)
         setOpen(true)
+        // The lock never survives a close — every open starts draggable
+        setLockedState(false)
         return
       } catch (e) {
         console.error('[FloatingWindow] Tauri native window failed:', e)
@@ -410,12 +412,15 @@ export function useFloatingWindow() {
     }, 200)
 
     setOpen(true)
-  }, [phase, remaining, total])
+  }, [phase, remaining, total, setLockedState])
 
   const close = useCallback(async () => {
     if (isTauri()) {
       await hideFloatingWindow()
       setOpen(false)
+      // Rust already forces the window unlocked on hide; mirror it here so the
+      // settings button flips back immediately even if the event is missed.
+      setLockedState(false)
       return
     }
     if (pipWindowRef.current) {
@@ -430,7 +435,8 @@ export function useFloatingWindow() {
       bcRef.current = null
     }
     setOpen(false)
-  }, [])
+    setLockedState(false)
+  }, [setLockedState])
 
   // Live-update the floating window opacity (called from the settings slider)
   const setOpacity = useCallback(async (opacity: number) => {
