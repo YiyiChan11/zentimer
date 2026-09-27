@@ -1,6 +1,6 @@
 {
     "productName":  "ZenTimer",
-    "version":  "1.10.6",
+    "version":  "1.10.7",
     "identifier":  "com.zentimer.app",
     "build":  {
                   "beforeDevCommand":  "npm run dev",
@@ -27,12 +27,6 @@
                             ],
                 "security":  {
                                  "csp":  null
-                             },
-                "trayIcon":  {
-                                 "iconPath":  "icons/icon.png",
-                                 "iconAsTemplate":  false,
-                                 "menuOnLeftClick":  false,
-                                 "tooltip":  "ZenTimer"
                              }
             },
     "bundle":  {

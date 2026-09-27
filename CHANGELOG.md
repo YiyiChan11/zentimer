@@ -5,6 +5,11 @@ All notable changes to ZenTimer are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.10.7] — 2026-09-27
+
+### Fixed
+- **Two system tray icons, one of them dead** — The tray icon was being registered twice: once declaratively via `app.trayIcon` in `tauri.conf.json`, and once in Rust via `TrayIconBuilder`. The config-declared one carries no menu and no click handler, so it appeared in the notification area but did nothing on either left- or right-click. The redundant config entry has been removed, leaving the single fully-functional icon: left-click toggles the main window, right-click opens the 显示窗口 / 隐藏窗口 / 退出 menu.
+
 ## [1.10.6] — 2026-09-20
 
 ### Fixed
@@ -119,6 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+[1.10.7]: https://github.com/YiyiChan11/zentimer/compare/v1.10.6...main
 [1.10.6]: https://github.com/YiyiChan11/zentimer/compare/v1.10.5...main
 [1.10.5]: https://github.com/YiyiChan11/zentimer/compare/v1.10.4...main
 [1.10.4]: https://github.com/YiyiChan11/zentimer/compare/v1.10.3...main
