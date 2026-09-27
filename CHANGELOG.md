@@ -5,6 +5,11 @@ All notable changes to ZenTimer are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.10.8] — 2026-09-27
+
+### Fixed
+- **Floating Skip button jumped a whole round instead of one phase** — `useFloatingWindow()` is consumed by two components (`App` and `SettingsPanel`), and each instance registered its own `listen()` handlers. Tauri dispatches every event to *all* registered handlers, so a single click on the floating Skip button ran `skip()` twice — focus → break → next focus, which looked like the break was skipped entirely. Reset appeared to work only because `reset()` is idempotent. The floating-window event bridge (`floating-skip` / `floating-reset` / `floating-closed` / `floating-lock-changed`) is now installed exactly once at module scope and reads from the stores directly, so it cannot double-fire or go stale. Floating Skip now behaves exactly like the main app's: focus → break, break/buffer → next focus.
+
 ## [1.10.7] — 2026-09-27
 
 ### Fixed
@@ -124,6 +129,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+[1.10.8]: https://github.com/YiyiChan11/zentimer/compare/v1.10.7...main
 [1.10.7]: https://github.com/YiyiChan11/zentimer/compare/v1.10.6...main
 [1.10.6]: https://github.com/YiyiChan11/zentimer/compare/v1.10.5...main
 [1.10.5]: https://github.com/YiyiChan11/zentimer/compare/v1.10.4...main

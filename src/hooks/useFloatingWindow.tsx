@@ -212,6 +212,49 @@ document.body.onclick = () => {
 </html>`
 }
 
+// ── Floating-window event bridge (installed ONCE, module scope) ──
+//
+// useFloatingWindow() is consumed by more than one component (App and
+// SettingsPanel). Registering the listeners inside the hook meant one
+// registration per consumer, and Tauri's event system dispatches every event
+// to ALL registered handlers — so a single click on the floating Skip button
+// ran skip() twice and blew through two phases (focus → break → next focus)
+// instead of one. Reset looked fine only because reset() is idempotent.
+//
+// The bridge is therefore installed exactly once for the lifetime of the app
+// and reads state straight from the stores instead of closing over hook
+// values, so it cannot go stale either.
+let floatingBridgeInstalled = false
+
+function installFloatingBridge() {
+  if (floatingBridgeInstalled || !isTauri()) return
+  floatingBridgeInstalled = true
+
+  // Floating window closed from its own × button → keep the toggle in sync.
+  // (Using the global event channel instead of a window-scoped listen avoids
+  // any dependency on the current-window handle resolving.)
+  listen('floating-closed', () => {
+    useFloatingStore.getState().setOpen(false)
+  }).catch(() => {})
+
+  // Lock toggled from the floating window's own lock button → keep
+  // SettingsPanel's Lock Floating button in sync.
+  listen<boolean>('floating-lock-changed', (event) => {
+    useFloatingStore.getState().setLocked(event.payload)
+  }).catch(() => {})
+
+  // Reset button → back to idle, stopped (matches the main app).
+  listen('floating-reset', () => {
+    useTimerStore.getState().reset()
+  }).catch(() => {})
+
+  // Skip button → same as the main app's Skip: focus → break,
+  // break/buffer → next focus.
+  listen('floating-skip', () => {
+    useTimerStore.getState().skip()
+  }).catch(() => {})
+}
+
 export function useFloatingWindow() {
   const isOpen = useFloatingStore((s) => s.isOpen)
   const isLocked = useFloatingStore((s) => s.isLocked)
@@ -270,74 +313,9 @@ export function useFloatingWindow() {
     return () => clearInterval(checkClosed)
   }, [isOpen])
 
-  // Sync with native floating window close (Tauri only) — when the floating
-  // window is closed from its own × button, Rust emits a global
-  // "floating-closed" event so the main app's toggle button reflects the
-  // closed state. Using the global event channel (instead of window-scoped
-  // listen) avoids any dependency on the current-window handle resolving.
+  // Install the floating-window event bridge (idempotent — see module scope)
   useEffect(() => {
-    if (!isTauri()) return
-    let unlisten: (() => void) | undefined
-    listen('floating-closed', () => {
-      setOpen(false)
-    })
-      .then((u) => {
-        unlisten = u
-      })
-      .catch(() => {})
-    return () => {
-      unlisten?.()
-    }
-  }, [])
-
-  // Sync lock state when toggled from the floating window's own lock button.
-  // Rust emits "floating-lock-changed" with the boolean; we update Zustand
-  // so SettingsPanel's Lock Floating button stays in sync.
-  useEffect(() => {
-    if (!isTauri()) return
-    let unlisten: (() => void) | undefined
-    listen<boolean>('floating-lock-changed', (event) => {
-      setLockedState(event.payload)
-    })
-      .then((u) => {
-        unlisten = u
-      })
-      .catch(() => {})
-    return () => {
-      unlisten?.()
-    }
-  }, [setLockedState])
-
-  // Reset timer from floating window's Reset button
-  useEffect(() => {
-    if (!isTauri()) return
-    let unlisten: (() => void) | undefined
-    listen('floating-reset', () => {
-      useTimerStore.getState().reset()
-    })
-      .then((u) => {
-        unlisten = u
-      })
-      .catch(() => {})
-    return () => {
-      unlisten?.()
-    }
-  }, [])
-
-  // Skip current session from floating window's Skip button
-  useEffect(() => {
-    if (!isTauri()) return
-    let unlisten: (() => void) | undefined
-    listen('floating-skip', () => {
-      useTimerStore.getState().skip()
-    })
-      .then((u) => {
-        unlisten = u
-      })
-      .catch(() => {})
-    return () => {
-      unlisten?.()
-    }
+    installFloatingBridge()
   }, [])
 
   const open = useCallback(async () => {
